@@ -19,7 +19,7 @@ struct kscan_adc{
 // #define KSCAN_ADC_GET_BY_IDX(node_id, idx)                                                  \
 //     ((struct kscan_adc){.spec = ADC_DT_SPEC_GET_BY_IDX(node_id, idx), .index = idx})
 
-#define INST_ADC_LEN(n) DT_INST_PROP_LEN(n, io_channels)
+// #define INST_ADC_LEN(n) DT_INST_PROP_LEN(n, io_channels)
 
 struct kscan_adc_list{
     struct kscan_adc *adcs;
@@ -27,8 +27,8 @@ struct kscan_adc_list{
 };
 
 /** Define a kscan_adc_list from a compile-time ADC array. */
-#define KSCAN_ADC_LIST(adc_array)                                                                \
-    ((struct kscan_adc_list){.adcs = adc_array, .len = ARRAY_SIZE(adc_array)})
+// #define KSCAN_ADC_LIST(adc_array)                                                                \
+//     ((struct kscan_adc_list){.adcs = adc_array, .len = ARRAY_SIZE(adc_array)})
 
 static int compare_channels(const void *a, const void *b) {
     const struct kscan_adc *adc_a = a;
@@ -48,8 +48,8 @@ struct kscan_gpio {
 };
 
 /** GPIO_DT_SPEC_GET_BY_IDX(), but for a struct kscan_gpio. */
-#define KSCAN_GPIO_GET_BY_IDX(node_id, prop, idx)                                                  \
-    ((struct kscan_gpio){.spec = GPIO_DT_SPEC_GET_BY_IDX(node_id, prop, idx), .index = idx})
+// #define KSCAN_GPIO_GET_BY_IDX(node_id, prop, idx)                                                  \
+//     ((struct kscan_gpio){.spec = GPIO_DT_SPEC_GET_BY_IDX(node_id, prop, idx), .index = idx})
 
 struct kscan_gpio_list {
     struct kscan_gpio *gpios;
@@ -57,8 +57,8 @@ struct kscan_gpio_list {
 };
 
 /** Define a kscan_gpio_list from a compile-time GPIO array. */
-#define KSCAN_GPIO_LIST(gpio_array)                                                                \
-    ((struct kscan_gpio_list){.gpios = gpio_array, .len = ARRAY_SIZE(gpio_array)})
+// #define KSCAN_GPIO_LIST(gpio_array)                                                                \
+//     ((struct kscan_gpio_list){.gpios = gpio_array, .len = ARRAY_SIZE(gpio_array)})
 
 struct adc_key_state{
     bool pressed : 1;
