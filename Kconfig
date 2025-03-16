@@ -1,0 +1,4 @@
+DT_COMPAT_ZMK_DRIVER_KSCAN_ADC_DIRECT := zmk,kscan-adc-direct
+config ZMK_DRIVER_KSCAN_ADC_DIRECT
+    bool
+    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_ADC_DIRECT))

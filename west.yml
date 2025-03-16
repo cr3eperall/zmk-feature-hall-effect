@@ -1,0 +1,11 @@
+# manifest:
+#   remotes:
+#     - name: remote-name
+#       url-base: https://github.com/remote-name
+#   projects:
+#     # Together with the above defined remote, this refers to a module located at
+#     # https://github.com/remote-name/repository-name
+#     - name: repository-name
+#       remote: remote-name
+#       # This points to a west manifest file in the remote module for further imports
+#       import: west.yml

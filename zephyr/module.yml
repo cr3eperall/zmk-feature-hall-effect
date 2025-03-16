@@ -1,0 +1,15 @@
+# Delete all unused properties.
+
+# Give your module a name
+name: zmk-driver-analog-kscan
+build:
+  # List your dependencies
+  # depends:
+  #   - zmk-example-dependency
+  # Folder containing a "CMakeLists.txt" (. = root)
+  cmake: .
+  # Kconfig filepath
+  kconfig: Kconfig
+  settings:
+    # Folder containing a "dts" folder (. = root)
+    dts_root: .
