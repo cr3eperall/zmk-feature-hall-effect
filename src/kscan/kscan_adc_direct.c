@@ -320,15 +320,26 @@ static const struct kscan_driver_api kscan_adc_direct_api = {
     }
 
 // needed because for some reason `ADC_DT_SPEC_GET(node_id)` doesn't work
-#define ADC_DT_SPEC_GET_MINIMAL(node_id) \
-    { \
-        .dev = DEVICE_DT_GET(DT_IO_CHANNELS_CTLR(node_id)), \
-        .channel_id = DT_IO_CHANNELS_INPUT(node_id), \
-    }
+// #define ADC_DT_SPEC_GET_MINIMAL(node_id) \
+//     { \
+//         .dev = DEVICE_DT_GET(DT_IO_CHANNELS_CTLR(node_id)), \
+//         .channel_id = DT_IO_CHANNELS_INPUT(node_id), \
+//     }
+
+
+#define ADC_DT_SPEC_STRUCT_1(ctlr, input) { \
+    .dev = DEVICE_DT_GET(ctlr),          \
+    .channel_id = input,                 \ 
+        ADC_CHANNEL_CFG_FROM_DT_NODE(     \
+            DT_CHILD(ctlr, DT_CAT(channel_, input)))} /* stupid fucking workaround*/
+
+#define ADC_DT_SPEC_GET_1(node_id)                     \
+    ADC_DT_SPEC_STRUCT_1(DT_IO_CHANNELS_CTLR(node_id), \
+                            DT_IO_CHANNELS_INPUT(node_id))
 
 #define KSCAN_KEY_INIT(node_id) \
     (struct kscan_adc_key_cfg){                               \
-        .adc = ADC_DT_SPEC_GET(node_id),                                                \
+        .adc = ADC_DT_SPEC_GET_1(node_id),                                                \
         .press_point = DT_PROP(node_id, press_point),                                      \
         .release_point = DT_PROP(node_id, release_point),                                  \
         .calibration_min = DT_PROP(node_id, calibration_min),                              \
