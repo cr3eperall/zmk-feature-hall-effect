@@ -1,105 +1,75 @@
-#include "adc.h"
-
+#include <nrfx_saadc.h>
 #include <stdlib.h>
 #include <zephyr/device.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/kscan.h>
 #include <zephyr/drivers/adc.h>
 #include <zephyr/drivers/gpio.h>
-#include <nrfx_saadc.h>
-#include <zephyr/pm/device.h>
+#include <zephyr/drivers/kscan.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/pm/device.h>
 #include <zephyr/settings/settings.h>
+
+#include "adc.h"
 // #include <zephyr/sys/util.h>
 
-LOG_MODULE_REGISTER(kscan_adc_direct, CONFIG_LOG_MAX_LEVEL); // TODO change name
+LOG_MODULE_REGISTER(kscan_adc_direct,
+                    CONFIG_LOG_MAX_LEVEL);  // TODO change name
 
 #define DT_DRV_COMPAT zmk_kscan_adc_direct
 
-struct kscan_adc_group_data{
-    struct adc_sequence as;
-    struct adc_key_state *key_state_vec;
-    int16_t *adc_buffer;
-};
-
-struct kscan_adc_data{
-    const struct device *dev;
-    struct kscan_adc_group_data *adc_groups;
-    kscan_callback_t callback;
-    struct k_work_delayable work;
-};
-
-struct kscan_adc_key_cfg{
-    struct adc_dt_spec adc;
-    int16_t press_point;
-    int16_t release_point;
-    int16_t calibration_min;
-    int16_t calibration_max;
-};
-
-struct kscan_adc_group_cfg{
-    const struct gpio_dt_spec enable_gpio;
-    bool switch_pressed_is_higher;
-    int16_t switch_height;
-    int16_t key_count;
-    struct kscan_adc_key_cfg *keys;
-};
-
-struct kscan_adc_config{
-    bool pulse_read;
-    int16_t resolution;
-    int16_t read_turn_on_time;
-    int16_t wait_period_idle;
-    int16_t wait_period_press;
-    int16_t group_count;
-    struct kscan_adc_group_cfg *adc_groups;
-};
-
-static int kscan_adc_init_adc(const struct device *dev){
+static int kscan_adc_init_adc(const struct device *dev) {
     const struct kscan_adc_config *conf = dev->config;
     struct kscan_adc_data *data = dev->data;
-    volatile void* api =conf->adc_groups[0].keys[0].adc.dev->api;
-    for(int i=0; i<conf->group_count; i++){
-        for(int j=0; j<conf->adc_groups[i].key_count; j++){
+    volatile void *api = conf->adc_groups[0].keys[0].adc.dev->api;
+    for (int i = 0; i < conf->group_count; i++) {
+        for (int j = 0; j < conf->adc_groups[i].key_count; j++) {
             const struct adc_dt_spec *adc = &conf->adc_groups[i].keys[j].adc;
-            if(!device_is_ready(adc->dev)){
+            if (!device_is_ready(adc->dev)) {
                 LOG_ERR("ADC is not ready: %s", adc->dev->name);
                 return -ENODEV;
             }
-            
+
             int err = adc_channel_setup_dt(adc);
             if (err) {
-                LOG_ERR("Unable to configure ADC %u on %s for output", adc->channel_id, adc->dev->name);
+                LOG_ERR("Unable to configure ADC %u on %s for output",
+                        adc->channel_id, adc->dev->name);
                 return err;
             }
             data->adc_groups[i].as.channels |= BIT(adc->channel_id);
-            LOG_DBG("Configured ADC %u on %s for output", adc->channel_id, adc->dev->name);
+            LOG_DBG("Configured ADC %u on %s for output", adc->channel_id,
+                    adc->dev->name);
         }
     }
 
     return 0;
 }
 
-static int kscan_adc_init_gpio(const struct device *dev){
+static int kscan_adc_init_gpio(const struct device *dev) {
     const struct kscan_adc_config *conf = dev->config;
-    for(int i=0; i<conf->group_count; i++){
+    if (!conf->pulse_read) {
+        LOG_DBG("Pulse read disabled");
+        return 0;
+    }
+    for (int i = 0; i < conf->group_count; i++) {
         const struct gpio_dt_spec *gpio = &conf->adc_groups[i].enable_gpio;
-        if(!device_is_ready(gpio->port)){
+        if (!device_is_ready(gpio->port)) {
             LOG_ERR("PWM is not ready: %s", gpio->port->name);
             return -ENODEV;
         }
-        int err = gpio_pin_configure_dt(gpio, GPIO_OUTPUT | GPIO_OUTPUT_INIT_LOW);
+        int err =
+            gpio_pin_configure_dt(gpio, GPIO_OUTPUT | GPIO_OUTPUT_INIT_LOW);
         if (err) {
-            LOG_ERR("Unable to configure pin %u on %s for output", gpio->pin, gpio->port->name);
+            LOG_ERR("Unable to configure pin %u on %s for output", gpio->pin,
+                    gpio->port->name);
             return err;
         }
-        LOG_DBG("Configured GPIO pin %u on %s for output", gpio->pin, gpio->port->name);
+        LOG_DBG("Configured GPIO pin %u on %s for output", gpio->pin,
+                gpio->port->name);
     }
     return 0;
 }
 
-static int kscan_adc_setup_pins(const struct device *dev){
+static int kscan_adc_setup_pins(const struct device *dev) {
     int err = kscan_adc_init_adc(dev);
     if (err) {
         LOG_ERR("Error during ADC init: %d", err);
@@ -134,62 +104,77 @@ static void kscan_adc_read_end(const struct device *dev) {
     k_work_reschedule(&data->work, K_MSEC(conf->wait_period_idle));
 }
 
-static int kscan_adc_read(const struct device *dev){
-    struct kscan_adc_config *conf= dev->config;
-    struct kscan_adc_data *data= dev->data;
+static int kscan_adc_read(const struct device *dev) {
+    struct kscan_adc_config *conf = dev->config;
+    struct kscan_adc_data *data = dev->data;
     // k_msleep(3000);
     // LOG_INF("pin high");
-    for(int i=0; i<conf->group_count; i++){
+    for (int i = 0; i < conf->group_count; i++) {
+        const struct kscan_adc_group_cfg group_cfg = conf->adc_groups[i];
+        int err;
+        if (conf->pulse_read) {
+            err = gpio_pin_set_dt(&group_cfg.enable_gpio, 1);
+            if (err) {
+                LOG_ERR("Failed to set output %i high: %i",
+                        group_cfg.enable_gpio.pin, err);
+                return err;
+            }
+            // k_msleep(1000);
+            // LOG_INF("busy wait");
 
-        int err = gpio_pin_set_dt(&conf->adc_groups[i].enable_gpio, 1);
-        if (err) {
-            LOG_ERR("Failed to set output %i high: %i", conf->adc_groups[i].enable_gpio.pin, err);
-            return err;
+            k_busy_wait(conf->read_turn_on_time);
+            // k_msleep(1000);
+            // LOG_INF("adc read");
         }
-        // k_msleep(1000);
-        // LOG_INF("busy wait");
-        
-        k_busy_wait(conf->read_turn_on_time);
-        // k_msleep(1000);
-        // LOG_INF("adc read");
-        
-        err = adc_read(conf->adc_groups[i].keys[0].adc.dev, &data->adc_groups[i].as);
-        if(err){
+
+        err = adc_read(group_cfg.keys[0].adc.dev, &data->adc_groups[i].as);
+        if (err) {
             LOG_ERR("ADC READ ERROR %d", err);
         }
         // k_msleep(1000);
         // LOG_INF("pin low");
-        
-        err = gpio_pin_set_dt(&conf->adc_groups[i].enable_gpio, 0);
-        if (err) {
-            LOG_ERR("Failed to set output %i low: %i", conf->adc_groups[i].enable_gpio.pin, err);
+        if (conf->pulse_read) {
+            err = gpio_pin_set_dt(&group_cfg.enable_gpio, 0);
+            if (err) {
+                LOG_ERR("Failed to set output %i low: %i",
+                        group_cfg.enable_gpio.pin, err);
+            }
         }
-        
-        // TODO normalize adc results (invert if necessary)
     }
-    bool pressed=false;
-    for(int i=0; i<conf->group_count; i++){
-        for(int j=0; j<conf->adc_groups[i].key_count; j++){
-            const int16_t adc_value = data->adc_groups[i].adc_buffer[j];
-            LOG_INF("adc [%d,%d] data: %hi", i, j, adc_value);
-            if(adc_value >= conf->adc_groups[i].keys[j].press_point){
-                pressed=true;
-                adc_key_state_update(&data->adc_groups[i].key_state_vec[j], true, adc_value);
-            }else if(adc_value < conf->adc_groups[i].keys[j].release_point){
-                adc_key_state_update(&data->adc_groups[i].key_state_vec[j], false, adc_value);
-            }else{
+    bool pressed = false;
+    for (int i = 0; i < conf->group_count; i++) {
+        const struct kscan_adc_group_cfg group_cfg = conf->adc_groups[i];
+        for (int j = 0; j < group_cfg.key_count; j++) {
+            const int16_t raw_adc_value = data->adc_groups[i].adc_buffer[j];
+            const int16_t key_height = kscan_adc_get_mapped_height(dev, i, j);
+            const int16_t press_height = kscan_adc_cfg_press_height(dev, i, j);
+            const int16_t release_height =
+                kscan_adc_cfg_release_height(dev, i, j);
+
+            LOG_INF("adc [%d,%d] raw: %hi, height: %hi", i, j, raw_adc_value,
+                    key_height);
+            if (key_height <= press_height) {
+                pressed = true;
+                adc_key_state_update(&data->adc_groups[i].key_state_vec[j],
+                                     true, key_height);
+            } else if (key_height > release_height) {
+                adc_key_state_update(&data->adc_groups[i].key_state_vec[j],
+                                     false, key_height);
+            } else {
                 // keep old state
-                pressed=true;
             }
         }
     }
 
-    for(int i=0; i<conf->group_count; i++){
-        for(int j=0; j<conf->adc_groups[i].key_count; j++){
-            if(adc_key_state_has_changed(&data->adc_groups[i].key_state_vec[j])){
-                const bool pressed = adc_key_state_is_pressed(&data->adc_groups[i].key_state_vec[j]);
+    for (int i = 0; i < conf->group_count; i++) {
+        for (int j = 0; j < conf->adc_groups[i].key_count; j++) {
+            if (adc_key_state_has_changed(
+                    &data->adc_groups[i].key_state_vec[j])) {
+                const bool pressed = adc_key_state_is_pressed(
+                    &data->adc_groups[i].key_state_vec[j]);
 
-                LOG_DBG("Sending event at channel %i state %s", i, pressed ? "on" : "off");
+                LOG_DBG("Sending event at channel %i state %s", i,
+                        pressed ? "on" : "off");
                 data->callback(dev, 0, i, pressed);
             }
         }
@@ -197,9 +182,9 @@ static int kscan_adc_read(const struct device *dev){
 
     // LOG_INF("pressed: %i", pressed);
     // return 0;
-    if(pressed){
+    if (pressed) {
         kscan_adc_read_continue(dev);
-    }else{
+    } else {
         kscan_adc_read_end(dev);
     }
 
@@ -208,30 +193,32 @@ static int kscan_adc_read(const struct device *dev){
 
 static void kscan_adc_work_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
-    struct kscan_adc_data *data = CONTAINER_OF(dwork, struct kscan_adc_data, work);
+    struct kscan_adc_data *data =
+        CONTAINER_OF(dwork, struct kscan_adc_data, work);
     kscan_adc_read(data->dev);
 }
 
 // driver init function
-static int kscan_adc_direct_init(const struct device *dev){
+static int kscan_adc_direct_init(const struct device *dev) {
     struct kscan_adc_data *data = dev->data;
     struct kscan_adc_config *conf = dev->config;
-    // TODO this shouldn't modify the config struct, it would be better to copy input_adcs to data and modify that 
-    // (it wouldn't really change anything but it would look better)
+    // TODO this shouldn't modify the config struct, it would be better to copy
+    // input_adcs to data and modify that (it wouldn't really change anything
+    // but it would look better)
     // kscan_adc_list_sort_by_channel(&conf->input_adcs);
     data->dev = dev;
-    for(int i=0; i<conf->group_count; i++){
-        data->adc_groups->as=(struct adc_sequence){
-            .buffer=data->adc_groups[i].adc_buffer,
-            .buffer_size=sizeof(int16_t)*(conf->adc_groups[i].key_count),
-            .calibrate=false,
-            .channels=0,
-            .options=NULL,
-            .oversampling=0,
-            .resolution=conf->resolution
-        };
+    for (int i = 0; i < conf->group_count; i++) {
+        kscan_adc_sort_keys_by_channel(&conf->adc_groups[i]);
+        data->adc_groups->as = (struct adc_sequence){
+            .buffer = data->adc_groups[i].adc_buffer,
+            .buffer_size = sizeof(int16_t) * (conf->adc_groups[i].key_count),
+            .calibrate = false,
+            .channels = 0,
+            .options = NULL,
+            .oversampling = 0,
+            .resolution = conf->resolution};
     }
-    
+
     // init kwork
     k_work_init_delayable(&data->work, kscan_adc_work_handler);
 
@@ -243,7 +230,7 @@ static int kscan_adc_direct_init(const struct device *dev){
 #endif
 
 #else
-LOG_INF("CONFIG_PM_DEVICE_RUNTIME disabled");
+    LOG_INF("CONFIG_PM_DEVICE_RUNTIME disabled");
     int err = kscan_adc_setup_pins(dev);
     if (err) {
         LOG_ERR("Error during pins setup: %d", err);
@@ -256,22 +243,24 @@ LOG_INF("CONFIG_PM_DEVICE_RUNTIME disabled");
 
 #if IS_ENABLED(CONFIG_PM_DEVICE)
 
-//power management function
-static int kscan_adc_direct_pm_action(const struct device *dev, enum pm_device_action action) {
+// power management function
+static int kscan_adc_direct_pm_action(const struct device *dev,
+                                      enum pm_device_action action) {
     switch (action) {
-    case PM_DEVICE_ACTION_SUSPEND:
-        return kscan_adc_direct_disable(dev);
-    case PM_DEVICE_ACTION_RESUME:
-        return kscan_adc_direct_enable(dev);
-    default:
-        return -ENOTSUP;
+        case PM_DEVICE_ACTION_SUSPEND:
+            return kscan_adc_direct_disable(dev);
+        case PM_DEVICE_ACTION_RESUME:
+            return kscan_adc_direct_enable(dev);
+        default:
+            return -ENOTSUP;
     }
 }
 
-#endif // IS_ENABLED(CONFIG_PM_DEVICE)
+#endif  // IS_ENABLED(CONFIG_PM_DEVICE)
 
 // config function
-static int kscan_adc_direct_configure(const struct device *dev, const kscan_callback_t callback) {
+static int kscan_adc_direct_configure(const struct device *dev,
+                                      const kscan_callback_t callback) {
     struct kscan_adc_data *data = dev->data;
 
     if (!callback) {
@@ -303,81 +292,79 @@ static const struct kscan_driver_api kscan_adc_direct_api = {
     .disable_callback = kscan_adc_direct_disable,
 };
 
-// #define KSCAN_ADC_GET_BY_IDX(node_id, idx)                                                  \
-//     ((struct kscan_adc){.spec = ADC_DT_SPEC_GET_BY_IDX(node_id, idx), .index = idx})
-
-// #define KSCAN_ADC_CFG_INIT(idx, inst_idx)                                                     \
-//     KSCAN_ADC_GET_BY_IDX(DT_DRV_INST(inst_idx), idx)
-
-#define ZEROS(node_id) 0
+// #define ZEROS(node_id) 0
 
 #define CHILD_COUNT(node_id) 1
 
-#define KSCAN_GROUP_DATA_INIT(node_id, inst_id) \
-    (struct kscan_adc_group_data){               \
+#define IMPLY(cond1, cond2) (!(cond1) || (cond2))
+
+#define KSCAN_GROUP_DATA_INIT(node_id, inst_id)                \
+    (struct kscan_adc_group_data) {                            \
         .key_state_vec = &key_state_vec_##inst_id##_##node_id, \
-        .adc_buffer = &adc_buffer_##inst_id##_##node_id, \
+        .adc_buffer = &adc_buffer_##inst_id##_##node_id,       \
     }
 
-// needed because for some reason `ADC_DT_SPEC_GET(node_id)` doesn't work
-// #define ADC_DT_SPEC_GET_MINIMAL(node_id) \
-//     { \
-//         .dev = DEVICE_DT_GET(DT_IO_CHANNELS_CTLR(node_id)), \
-//         .channel_id = DT_IO_CHANNELS_INPUT(node_id), \
-//     }
-
-
-#define ADC_DT_SPEC_STRUCT_1(ctlr, input) { \
-    .dev = DEVICE_DT_GET(ctlr),          \
-    .channel_id = input,                 \ 
-        ADC_CHANNEL_CFG_FROM_DT_NODE(     \
-            DT_CHILD(ctlr, DT_CAT(channel_, input)))} /* stupid fucking workaround*/
+#define ADC_DT_SPEC_STRUCT_1(ctlr, input)                                      \
+    {.dev = DEVICE_DT_GET(ctlr), .channel_id = input,                 \ 
+        ADC_CHANNEL_CFG_FROM_DT_NODE(DT_CHILD(ctlr, DT_CAT(channel_, input)))} \
+    /* stupid fucking workaround*/
 
 #define ADC_DT_SPEC_GET_1(node_id)                     \
     ADC_DT_SPEC_STRUCT_1(DT_IO_CHANNELS_CTLR(node_id), \
-                            DT_IO_CHANNELS_INPUT(node_id))
+                         DT_IO_CHANNELS_INPUT(node_id))
 
-#define KSCAN_KEY_INIT(node_id) \
-    (struct kscan_adc_key_cfg){                               \
-        .adc = ADC_DT_SPEC_GET_1(node_id),                                                \
-        .press_point = DT_PROP(node_id, press_point),                                      \
-        .release_point = DT_PROP(node_id, release_point),                                  \
-        .calibration_min = DT_PROP(node_id, calibration_min),                              \
-        .calibration_max = DT_PROP(node_id, calibration_max),                              \
+#define KSCAN_KEY_INIT(node_id)                               \
+    (struct kscan_adc_key_cfg) {                              \
+        .adc = ADC_DT_SPEC_GET_1(node_id),                    \
+        .press_point = DT_PROP(node_id, press_point),         \
+        .release_point = DT_PROP(node_id, release_point),     \
+        .calibration_min = DT_PROP(node_id, calibration_min), \
+        .calibration_max = DT_PROP(node_id, calibration_max), \
     }
 
-#define KSCAN_GROUP_INIT(node_id, inst_id) \
-    (struct kscan_adc_group_cfg){                                                                                             \
-        .enable_gpio = GPIO_DT_SPEC_GET_OR(node_id, enable_gpios, {}),             \
-        .switch_pressed_is_higher = DT_PROP(node_id, switch_pressed_is_higher),            \
-        .switch_height = DT_PROP(node_id, switch_height),                                  \
-        .key_count = DT_FOREACH_CHILD_SEP(node_id, CHILD_COUNT, (+)),                                     \
-        .keys = &keys_##inst_id##_##node_id                                                                                      \
+#define KSCAN_GROUP_INIT(node_id, inst_id)                             \
+    (struct kscan_adc_group_cfg) {                                     \
+        .enable_gpio = GPIO_DT_SPEC_GET_OR(node_id, enable_gpios, {}), \
+        .switch_pressed_is_higher =                                    \
+            DT_PROP(node_id, switch_pressed_is_higher),                \
+        .switch_height = DT_PROP(node_id, switch_height),              \
+        .key_count = DT_FOREACH_CHILD_SEP(node_id, CHILD_COUNT, (+)),  \
+        .keys = &keys_##inst_id##_##node_id                            \
     }
 
+#define GROUP_ALLOC(node_id, inst_id)                                          \
+    BUILD_ASSERT(IMPLY(DT_INST_PROP(inst_id, pulse_read),                      \
+                       DT_PROP_LEN_OR(node_id, enable_gpios, 0) > 0),          \
+                 "enable-gpios needs to be defined if pulse-read is enabled"); \
+    static int16_t adc_buffer_##inst_id##_##node_id[DT_FOREACH_CHILD_SEP(      \
+        node_id, CHILD_COUNT, (+))] = {0};                                     \
+    static struct adc_key_state                                                \
+        key_state_vec_##inst_id##_##node_id[DT_FOREACH_CHILD_SEP(              \
+            node_id, CHILD_COUNT, (+))] = {0};                                 \
+    static struct kscan_adc_key_cfg keys_##inst_id##_##node_id[] = {           \
+        DT_FOREACH_CHILD_SEP(node_id, KSCAN_KEY_INIT, (, ))};
 
-#define GROUP_ALLOC(node_id, inst_id)   \
-    static int16_t adc_buffer_##inst_id##_##node_id [DT_FOREACH_CHILD_SEP(node_id, CHILD_COUNT, (+))] = {0};    \
-    static struct adc_key_state key_state_vec_##inst_id##_##node_id [DT_FOREACH_CHILD_SEP(node_id, CHILD_COUNT, (+))]= {0};  \
-    static struct kscan_adc_key_cfg keys_##inst_id##_##node_id[] = {DT_FOREACH_CHILD_SEP(node_id, KSCAN_KEY_INIT, (, ))};
+#define KSCAN_ADC_DIRECT_INIT(n)                                               \
+    DT_INST_FOREACH_CHILD_VARGS(n, GROUP_ALLOC, n)                             \
+    static const struct kscan_adc_group_cfg kscan_adc_group_cfg_##n[] = {      \
+        DT_INST_FOREACH_CHILD_SEP_VARGS(n, KSCAN_GROUP_INIT, (, ), n)};        \
+    static struct kscan_adc_group_data kscan_adc_group_data_##n[] = {          \
+        DT_INST_FOREACH_CHILD_SEP_VARGS(n, KSCAN_GROUP_DATA_INIT, (, ), n)};   \
+    static struct kscan_adc_data kscan_adc_data_##n = {                        \
+        .adc_groups = &kscan_adc_group_data_##n};                              \
+    static const struct kscan_adc_config kscan_adc_config_##n = {              \
+        .resolution = DT_INST_PROP(n, resolution),                             \
+        .pulse_read = DT_INST_PROP(n, pulse_read),                             \
+        .read_turn_on_time = DT_INST_PROP(n, read_turn_on_time),               \
+        .wait_period_idle = DT_INST_PROP(n, wait_period_idle),                 \
+        .wait_period_press = DT_INST_PROP(n, wait_period_press),               \
+        .group_count = DT_INST_FOREACH_CHILD_SEP(n, CHILD_COUNT, (+)),         \
+        .adc_groups = &kscan_adc_group_cfg_##n,                                \
+    };                                                                         \
+    PM_DEVICE_DT_INST_DEFINE(n, kscan_adc_direct_pm_action);                   \
+    DEVICE_DT_INST_DEFINE(n, &kscan_adc_direct_init, PM_DEVICE_DT_INST_GET(n), \
+                          &kscan_adc_data_##n, &kscan_adc_config_##n,          \
+                          POST_KERNEL, CONFIG_KSCAN_INIT_PRIORITY,             \
+                          &kscan_adc_direct_api);
 
-#define KSCAN_ADC_INIT(n)                                                                                                               \
-    DT_INST_FOREACH_CHILD_VARGS(n, GROUP_ALLOC, n)                                                                                                    \
-    static const struct kscan_adc_group_cfg kscan_adc_group_cfg_##n[] = {DT_INST_FOREACH_CHILD_SEP_VARGS(n, KSCAN_GROUP_INIT, (, ), n)};                               \
-    static struct kscan_adc_group_data kscan_adc_group_data_##n[] = {DT_INST_FOREACH_CHILD_SEP_VARGS(n, KSCAN_GROUP_DATA_INIT, (, ), n)};                \
-    static struct kscan_adc_data kscan_adc_data_##n={.adc_groups = &kscan_adc_group_data_##n};                                          \
-    static const struct kscan_adc_config kscan_adc_config_##n = {                                                                       \
-        .resolution=DT_INST_PROP(n, resolution),                                                                                        \
-        .pulse_read=DT_INST_PROP(n, pulse_read),                                                                                        \
-        .read_turn_on_time=DT_INST_PROP(n, read_turn_on_time),                                                                          \
-        .wait_period_idle=DT_INST_PROP(n, wait_period_idle),                                                                            \
-        .wait_period_press=DT_INST_PROP(n, wait_period_press),  \
-        .group_count = DT_INST_FOREACH_CHILD_SEP(n, CHILD_COUNT, (+)),                                                                          \
-        .adc_groups = &kscan_adc_group_cfg_##n,                                                           \
-    };                                                                                                                                  \
-    PM_DEVICE_DT_INST_DEFINE(n, kscan_adc_direct_pm_action);                                                                            \
-    DEVICE_DT_INST_DEFINE(n, &kscan_adc_direct_init, PM_DEVICE_DT_INST_GET(n), &kscan_adc_data_##n,                                     \
-    &kscan_adc_config_##n, POST_KERNEL, CONFIG_KSCAN_INIT_PRIORITY,                                                                     \
-    &kscan_adc_direct_api);
-                                                                                                                                  
-DT_INST_FOREACH_STATUS_OKAY(KSCAN_ADC_INIT)
+DT_INST_FOREACH_STATUS_OKAY(KSCAN_ADC_DIRECT_INIT)

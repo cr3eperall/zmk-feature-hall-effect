@@ -50,11 +50,11 @@ child-binding:
       press-point:
         type: int
         description: Threshold to consider a key as pressed in micrometers from the top
-        default: 50
+        default: 2500
       release-point:
         type: int
         description: Threshold to consider a key as released in micrometers from the top
-        default: 60
+        default: 3000
       calibration-min:
         type: int
         description: Minimum value to consider for calibration
@@ -62,6 +62,6 @@ child-binding:
       calibration-max:
         type: int
         description: Maximum value to consider for calibration
-        default: 4095
+        default: 0
         
 
