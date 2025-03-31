@@ -9,9 +9,12 @@
 #include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/sys/util.h>
 
+#define KSCAN_ADC_MAX_CHANNELS 16
+
 struct kscan_adc_group_data {
     struct adc_sequence as;
     struct adc_key_state *key_state_vec;
+    int8_t *key_channels;
     int16_t *adc_buffer;
 };
 
@@ -20,6 +23,7 @@ struct kscan_adc_data {
     struct kscan_adc_group_data *adc_groups;
     kscan_callback_t callback;
     struct k_work_delayable work;
+    int64_t scan_time;
 };
 
 struct kscan_adc_key_cfg {

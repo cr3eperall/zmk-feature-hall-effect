@@ -8,7 +8,7 @@ static int compare_key_channel(const void *a, const void *b) {
 
 void kscan_adc_sort_keys_by_channel(struct kscan_adc_group_cfg *group_cfg) {
     qsort(group_cfg->keys, group_cfg->key_count,
-          sizeof(struct kscan_adc_key_cfg *), compare_key_channel);
+          sizeof(struct kscan_adc_key_cfg), compare_key_channel);
 }
 
 void adc_key_state_update(struct adc_key_state *state, bool pressed,
@@ -58,7 +58,7 @@ int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group,
         cal_max = (2 << config->resolution) - 1;
     }
 
-    float height_float = (raw_adc_value - cal_min) / (cal_max - cal_min);
+    float height_float = (float)(raw_adc_value - cal_min) / (float)(cal_max - cal_min);
     if (group_cfg.switch_pressed_is_higher) {
         height_float = 1.0 - height_float;
     }
