@@ -1,0 +1,70 @@
+# Copyright (c) 2020, Pete Johanson
+# SPDX-License-Identifier: MIT
+
+description: Hall effect key kscan controller that produces analog inputs
+
+compatible: "zmk,kscan-he-direct-pulse"
+
+include: kscan.yaml
+
+properties:
+  resolution:
+    type: int
+    default: 12
+    enum:
+      - 8
+      - 10
+      - 12
+  pulse-read:
+    type: boolean
+  read-turn-on-time:
+    description: Time to wait before reading the key after turning it on
+    type: int
+    default: 100
+  wait-period-idle:
+    type: int
+    default: 5
+  wait-period-press:
+    type: int
+    default: 1
+  kscan-forwarder:
+    description: The kscan forwarder to bind this instance to.
+    type: phandle
+
+child-binding:
+  description: Per enable-gpio group configuration
+  properties:
+    enable-gpios:
+      type: phandle-array #TODO change to phandle
+    switch-pressed-is-higher: #TODO change to lower if needed
+      type: boolean
+    switch-height:
+      description: Height of the switch in micrometers
+      type: int
+      default: 3300
+      
+  child-binding:
+    description: Per key configuration
+    properties:
+      io-channels:
+        description: ADC channel for this key
+        type: phandle-array
+        required: true
+      deadzone-top:
+        type: int
+        description: Threshold to start sending events in micrometers from the top
+        default: 250
+      deadzone-bottom:
+        type: int
+        description: Threshold to pause sending events in micrometers from the bottom
+        default: 250
+      calibration-min:
+        type: int
+        description: Minimum value to consider for calibration in raw ADC units
+        default: 0
+      calibration-max:
+        type: int
+        description: Maximum value to consider for calibration in raw ADC units
+        default: 0
+        
+
