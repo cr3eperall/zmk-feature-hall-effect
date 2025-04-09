@@ -1,9 +1,9 @@
 # Copyright (c) 2020, Pete Johanson
 # SPDX-License-Identifier: MIT
 
-description: Analog key kscan controller
+description: Hall effect kscan controller that produces INPUT_HE_RC analog inputs
 
-compatible: "zmk,kscan-adc-direct"
+compatible: "zmk,kscan-he-direct-pulsed"
 
 include: kscan.yaml
 
@@ -47,14 +47,14 @@ child-binding:
         description: ADC channel for this key
         type: phandle-array
         required: true
-      press-point:
+      deadzone-top:
         type: int
-        description: Threshold to consider a key as pressed in micrometers from the top
-        default: 2500
-      release-point:
+        description: Threshold to start producing events in micrometers from the top
+        default: 250
+      deadzone-bottom:
         type: int
-        description: Threshold to consider a key as released in micrometers from the top
-        default: 3000
+        description: Threshold to pause producing events in micrometers from the bottom
+        default: 250
       calibration-min:
         type: int
         description: Minimum value to consider for calibration

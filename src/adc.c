@@ -1,14 +1,14 @@
 #include "adc.h"
 static int compare_key_channel(const void *a, const void *b) {
-    const struct kscan_adc_key_cfg *adc_a = a;
-    const struct kscan_adc_key_cfg *adc_b = b;
+    const struct kscan_he_key_cfg *adc_a = a;
+    const struct kscan_he_key_cfg *adc_b = b;
 
     return adc_a->adc.channel_id - adc_b->adc.channel_id;
 }
 
-void kscan_adc_sort_keys_by_channel(struct kscan_adc_group_cfg *group_cfg) {
+void kscan_adc_sort_keys_by_channel(struct kscan_he_group_cfg *group_cfg) {
     qsort(group_cfg->keys, group_cfg->key_count,
-          sizeof(struct kscan_adc_key_cfg), compare_key_channel);
+          sizeof(struct kscan_he_key_cfg), compare_key_channel);
 }
 
 void adc_key_state_update(struct adc_key_state *state, bool pressed,
@@ -32,22 +32,22 @@ bool adc_key_state_has_changed(struct adc_key_state *state) {
 
 int16_t kscan_adc_cfg_press_height(const struct device *dev, uint8_t group,
                                    uint8_t key) {
-    const struct kscan_adc_config *config = dev->config;
-    return config->adc_groups[group].keys[key].press_point;
+    const struct kscan_he_config *config = dev->config;
+    return config->he_groups[group].keys[key].press_point;
 }
 
 int16_t kscan_adc_cfg_release_height(const struct device *dev, uint8_t group,
                                      uint8_t key) {
-    const struct kscan_adc_config *config = dev->config;
-    return config->adc_groups[group].keys[key].release_point;
+    const struct kscan_he_config *config = dev->config;
+    return config->he_groups[group].keys[key].release_point;
 }
 
 int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group,
                                     uint8_t key) {
-    struct kscan_adc_data *data = dev->data;
-    const struct kscan_adc_config *config = dev->config;
-    const struct kscan_adc_group_cfg group_cfg = config->adc_groups[group];
-    const struct kscan_adc_key_cfg key_cfg = group_cfg.keys[key];
+    struct kscan_he_data *data = dev->data;
+    const struct kscan_he_config *config = dev->config;
+    const struct kscan_he_group_cfg group_cfg = config->he_groups[group];
+    const struct kscan_he_key_cfg key_cfg = group_cfg.keys[key];
 
     int16_t raw_adc_value = data->adc_groups[group].adc_buffer[key];
 

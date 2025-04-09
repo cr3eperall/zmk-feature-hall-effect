@@ -18,7 +18,7 @@ struct kscan_adc_group_data {
     int16_t *adc_buffer;
 };
 
-struct kscan_adc_data {
+struct kscan_he_data {
     const struct device *dev;
     struct kscan_adc_group_data *adc_groups;
     kscan_callback_t callback;
@@ -26,7 +26,7 @@ struct kscan_adc_data {
     int64_t scan_time;
 };
 
-struct kscan_adc_key_cfg {
+struct kscan_he_key_cfg {
     struct adc_dt_spec adc;
     int16_t press_point;
     int16_t release_point;
@@ -34,27 +34,27 @@ struct kscan_adc_key_cfg {
     int16_t calibration_max;
 };
 
-struct kscan_adc_group_cfg {
+struct kscan_he_group_cfg {
     const struct gpio_dt_spec enable_gpio;
     bool switch_pressed_is_higher;
     int16_t switch_height;
     int16_t key_count;
-    struct kscan_adc_key_cfg *keys;
+    struct kscan_he_key_cfg *keys;
 };
 
-struct kscan_adc_config {
+struct kscan_he_config {
     bool pulse_read;
     int16_t resolution;
     int16_t read_turn_on_time;
     int16_t wait_period_idle;
     int16_t wait_period_press;
     int16_t group_count;
-    struct kscan_adc_group_cfg *adc_groups;
+    struct kscan_he_group_cfg *he_groups;
 };
 
 static int compare_key_channel(const void *a, const void *b);
 
-void kscan_adc_sort_keys_by_channel(struct kscan_adc_group_cfg *group_cfg);
+void kscan_adc_sort_keys_by_channel(struct kscan_he_group_cfg *group_cfg);
 
 struct adc_key_state{
     bool pressed : 1;
