@@ -1,0 +1,12 @@
+# Copyright (c) 2020, Pete Johanson
+# SPDX-License-Identifier: MIT
+
+description: Device that allows any device to generate kscan events by forwarding the event to the specified compatible driver.
+
+compatible: "zmk,kscan-forwarder"
+
+properties:
+  kscan: 
+    type: phandle
+    description: The kscan device to forward events to.
+    required: true
