@@ -119,7 +119,7 @@ static int vddh_init(const struct device *dev) {
     return rc;
 }
 
-#if DT_NODE_EXISTS(DT_DRV_INST(0));
+#if DT_NODE_EXISTS(DT_DRV_INST(0))
 
 static struct vddh_data vddh_data;
 

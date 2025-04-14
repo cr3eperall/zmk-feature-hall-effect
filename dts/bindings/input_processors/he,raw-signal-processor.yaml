@@ -9,11 +9,17 @@ include: ip_zero_param.yaml
 
 properties:
   matrix-size:
-    description: The size of the input matrix as rows x columns
+    description: The size of the input matrix as rows x columns, if the data received is outside of the matrix it will not be processed
     type: array
     required: true
+  offset:
+    description: Offset of the matrix
+    type: array
+    default: 
+      - 0
+      - 0
   filter-coefficients:
-    description: SOS coefficients for the filter as an array of dobles where each double is two 32-bit hex integers
+    description: SOS coefficients for the filter as an array of floats represented as 32-bit hex integers
     type: array
   variable-sample-compensation:
     description: how many fake samples to add when the sample frequency is reduced (e.g. when the switch is idle)
