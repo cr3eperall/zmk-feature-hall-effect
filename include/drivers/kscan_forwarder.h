@@ -21,7 +21,7 @@ typedef void (*kscan_forwarder_callback_t)(const struct device *dev, uint32_t ro
 
 
 typedef int (*kscan_forwarder_config_t)(const struct device *dev,
-    kscan_forwarder_callback_t callback);
+    kscan_forwarder_callback_t callback, const struct device *kscan_dev);
 typedef int (*kscan_forwarder_forward_t)(const struct device *dev, uint32_t row,
                                uint32_t column, bool pressed);
 
@@ -34,7 +34,7 @@ __subsystem struct kscan_forwarder_api {
  */
 
 /**
- * @brief Gives the callback to call from the kscan forwarder device.
+ * @brief Gives the kscan callback to the kscan forwarder device.
  * @param dev Pointer to the device structure for the driver instance.
  * @param callback to call when forwarding a key event.
  *
@@ -42,18 +42,18 @@ __subsystem struct kscan_forwarder_api {
  * @retval Negative errno code if failure.
  */
 __syscall int kscan_forwarder_config(const struct device *dev,
-    kscan_forwarder_callback_t callback);
+    kscan_forwarder_callback_t callback, const struct device *kscan_dev);
 
 static inline int z_impl_kscan_forwarder_config(const struct device *dev,
-    kscan_forwarder_callback_t callback) {
+    kscan_forwarder_callback_t callback, const struct device *kscan_dev) {
     const struct kscan_forwarder_api *api =
         (const struct kscan_forwarder_api *)dev->api;
 
-    if (api->config == NULL) {
+    if (api->config == NULL ) {
         return -ENOTSUP;
     }
 
-    return api->config(dev, callback);
+    return api->config(dev, callback, kscan_dev);
 }
 
 /**
@@ -86,4 +86,4 @@ static inline int z_impl_kscan_forwarder_forward(const struct device *dev,
  * @}
  */
 
-#include <syscalls/ext_power.h>
+#include <syscalls/kscan_forwarder.h>

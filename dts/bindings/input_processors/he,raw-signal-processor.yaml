@@ -1,0 +1,25 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Input processor for processing the raw hall effect sensor signal by limiting the output and filtering the noise
+
+compatible: "he,raw-signal-processor"
+
+include: ip_zero_param.yaml
+
+properties:
+  matrix-size:
+    description: The size of the input matrix as rows x columns
+    type: array
+    required: true
+  filter-coefficients:
+    description: SOS coefficients for the filter as an array of dobles where each double is two 32-bit hex integers
+    type: array
+  variable-sample-compensation:
+    description: how many fake samples to add when the sample frequency is reduced (e.g. when the switch is idle)
+    type: int
+    default: 0
+  wait-period-press:
+    description: the time in milliseconds between samples when the switch is active (when the time between 2 samples is greater than 2 * wait-period-press it will be considered as idle)
+    type: int
+    default: 1

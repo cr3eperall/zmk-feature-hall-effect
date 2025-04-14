@@ -1,0 +1,1 @@
+target_sources(app PRIVATE raw_signal_processor.c)

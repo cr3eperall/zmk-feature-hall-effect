@@ -1,4 +1,4 @@
-# Copyright (c) 2020, Pete Johanson
+# Copyright (c) 2025, cr3eperall
 # SPDX-License-Identifier: MIT
 
 description: Hall effect kscan controller that produces INPUT_HE_RC analog inputs
@@ -27,6 +27,12 @@ properties:
   wait-period-press:
     type: int
     default: 1
+  kscan-forwarder:
+    description: kscan-forwarder to pass the kscan callback to
+    type: phandle
+  calibrate:
+    description: Print the raw values to serial and don't send them to the input listener
+    type: boolean
 
 child-binding:
   description: Per enable-gpio group configuration

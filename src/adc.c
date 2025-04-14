@@ -1,4 +1,5 @@
 #include "adc.h"
+#include <math.h>
 static int compare_key_channel(const void *a, const void *b) {
     const struct kscan_he_key_cfg *adc_a = a;
     const struct kscan_he_key_cfg *adc_b = b;
@@ -11,35 +12,16 @@ void kscan_adc_sort_keys_by_channel(struct kscan_he_group_cfg *group_cfg) {
           sizeof(struct kscan_he_key_cfg), compare_key_channel);
 }
 
-void adc_key_state_update(struct adc_key_state *state, bool pressed,
-                          int16_t value) {
-    if (state->pressed == pressed) {
-        state->changed = false;
-    } else {
-        state->pressed = pressed;
-        state->changed = true;
-    }
-    state->last_value = value;
-}
-
-bool adc_key_state_is_pressed(struct adc_key_state *state) {
-    return state->pressed;
-}
-
-bool adc_key_state_has_changed(struct adc_key_state *state) {
-    return state->changed;
-}
-
-int16_t kscan_adc_cfg_press_height(const struct device *dev, uint8_t group,
+int16_t kscan_adc_cfg_deadzone_top(const struct device *dev, uint8_t group,
                                    uint8_t key) {
     const struct kscan_he_config *config = dev->config;
-    return config->he_groups[group].keys[key].press_point;
+    return config->he_groups[group].keys[key].deadzone_top;
 }
 
-int16_t kscan_adc_cfg_release_height(const struct device *dev, uint8_t group,
+int16_t kscan_adc_cfg_deadzone_bottom(const struct device *dev, uint8_t group,
                                      uint8_t key) {
     const struct kscan_he_config *config = dev->config;
-    return config->he_groups[group].keys[key].release_point;
+    return config->he_groups[group].keys[key].deadzone_bottom;
 }
 
 int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group,
@@ -63,6 +45,6 @@ int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group,
         height_float = 1.0 - height_float;
     }
 
-    int16_t height = height_float * group_cfg.switch_height;
+    int16_t height = round(height_float * group_cfg.switch_height);
     return height;
 }

@@ -1,4 +1,10 @@
-DT_COMPAT_ZMK_DRIVER_KSCAN_ADC_DIRECT := zmk,kscan-adc-direct
-config ZMK_DRIVER_KSCAN_ADC_DIRECT
+DT_COMPAT_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED := zmk,kscan-he-direct-pulsed
+DT_COMPAT_ZMK_DRIVER_KSCAN_FORWARDER := zmk,kscan-forwarder
+
+config CONFIG_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED
     bool
-    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_ADC_DIRECT))
+    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED))
+
+config CONFIG_ZMK_DRIVER_KSCAN_FORWARDER
+    bool
+    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_FORWARDER))
