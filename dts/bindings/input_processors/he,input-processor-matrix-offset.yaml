@@ -1,0 +1,9 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Input processor for adding an offset to the row and column of inputs received
+
+compatible: "he,input-processor-matrix-offset"
+
+include: ip_two_param.yaml
+
