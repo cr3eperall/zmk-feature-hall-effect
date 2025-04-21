@@ -5,23 +5,40 @@ description: Input processor for triggering a kscan signal or multiple behaviors
 
 compatible: "he,input-processor-adjustable-actuation"
 
-include: ip_zero_param.yaml
+include: ip_one_param.yaml
 
 properties:
   sensitivity:
     description: Controls how big is the window from the press to the release point
     type: int
-  kscan-passtrough:
+  kscan-passthrough:
     description: Ignore the behaviors defined here and use the ones defined in zmk,keymap
     type: boolean
-  filter-coefficients:
-    description: SOS coefficients for the filter as an array of floats represented as 32-bit hex integers
-    type: array
-  variable-sample-compensation:
-    description: how many fake samples to add when the sample frequency is reduced (e.g. when the switch is idle)
+  kscan-passthrough-position:
+    description: The position at which the passthrough will be triggered
     type: int
-    default: 0
-  wait-period-press:
-    description: the time in milliseconds between samples when the switch is active (when the time between 2 samples is greater than 2 * wait-period-press it will be considered as idle)
+  kscan-forwarder:
+    description: The kscan forwarder to use for this input processor
+    type: phandle
+  keymap-size:
+    description: The number of keys that will use this input processor
     type: int
-    default: 1
+
+child-binding:
+  description: "A behavior to execute when the sensor reaches a certain position"
+
+  properties:
+    position:
+      description: The position at which the behavior will be executed
+      type: int
+    direction:
+      description: The direction of the behavior
+      type: string
+      enum:
+        - up
+        - down
+        - both
+    bindings:
+      description: List of behaviors to execute when the sensor reaches a certain position
+      type: phandle-array
+      required: true

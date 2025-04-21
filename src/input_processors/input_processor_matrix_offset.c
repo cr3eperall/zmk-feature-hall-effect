@@ -25,7 +25,7 @@ static struct zmk_input_processor_driver_api processor_api = {
     .handle_event = matrix_offset_handle_event,
 };
 
-#define MAT_OFFSET_INIT(n)                                                        \                                                          \
+#define MAT_OFFSET_INIT(n)      \
     DEVICE_DT_INST_DEFINE(n, NULL, NULL,                              \
                           NULL,                     \
                           NULL, POST_KERNEL,      \

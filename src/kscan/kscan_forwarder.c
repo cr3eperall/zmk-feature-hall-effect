@@ -16,7 +16,6 @@ struct kscan_forwarder_data {
 // driver init function
 static int kscan_forwarder_init(const struct device *dev) {
     struct kscan_forwarder_data *data = dev->data;
-    struct kscan_forwarder_config *conf = dev->config;
 
     data->dev = dev;
     return 0;
@@ -39,7 +38,6 @@ static int forwarder_config(const struct device *dev,
 static int forwarder_forward(const struct device *dev, uint32_t row,
                                    uint32_t column, bool pressed) {
     struct kscan_forwarder_data *data = dev->data;
-    struct kscan_forwarder_config *conf = dev->config;
 
     if (!data->callback) {
         return -ENOTSUP;

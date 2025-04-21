@@ -1,0 +1,22 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Allows defining a keymap for Hall effect sensors composed of multiple layers
+
+compatible: "he,input-processor-keymap"
+
+include: ip_one_param.yaml
+
+properties:
+  transform:
+    description: The matrix transform to use along with this layout
+    type: phandle
+
+child-binding:
+  description: "A layer to be used in a keymap"
+
+  properties:
+    input-processors:
+      description: List of input processors like bindings for zmk,keymap, one per Hall effect sensor
+      type: phandle-array
+      required: true

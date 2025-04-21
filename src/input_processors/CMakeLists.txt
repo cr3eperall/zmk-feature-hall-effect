@@ -1,2 +1,5 @@
 target_sources(app PRIVATE raw_signal_processor.c)
 target_sources(app PRIVATE input_processor_matrix_offset.c)
+target_sources(app PRIVATE input_processor_blank_he.c)
+target_sources(app PRIVATE input_processor_keymap.c)
+target_sources(app PRIVATE input_processor_adjustable_actuation.c)

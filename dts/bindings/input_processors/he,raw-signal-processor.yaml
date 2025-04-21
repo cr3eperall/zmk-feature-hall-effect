@@ -29,3 +29,13 @@ properties:
     description: the time in milliseconds between samples when the switch is active (when the time between 2 samples is greater than 2 * wait-period-press it will be considered as idle)
     type: int
     default: 1
+  working-area:
+    description: The working area the sensor, if the signal is outside of this bound, it will not be propagated
+    type: array
+    default:
+      - 150
+      - 3150
+  sample-div:
+    description: lets an input for a key pass only once every `sample-div`*`wait-period-press` milliseconds, (this applies individually to every key position)
+    type: int
+    default: 1

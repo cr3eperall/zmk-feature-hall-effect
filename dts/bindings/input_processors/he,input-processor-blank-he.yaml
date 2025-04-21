@@ -1,0 +1,16 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Input processor that blocks/does nothing to Hall effect inputs and can log a warning
+
+compatible: "he,input-processor-blank-he"
+
+include: ip_zero_param.yaml
+
+properties:
+  log:
+    description: Logs when a Hall effect input is received
+    type: boolean
+  block:
+    description: Stop propagating the input when a Hall effect input is received
+    type: boolean
