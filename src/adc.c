@@ -1,16 +1,18 @@
 #include "adc.h"
 #include <math.h>
-static int compare_key_channel(const void *a, const void *b) {
-    const struct kscan_he_key_cfg *adc_a = a;
-    const struct kscan_he_key_cfg *adc_b = b;
+#include <stdlib.h>
 
-    return adc_a->adc.channel_id - adc_b->adc.channel_id;
-}
+// static int compare_key_channel(const void *a, const void *b) {
+//     const struct kscan_he_key_cfg *adc_a = a;
+//     const struct kscan_he_key_cfg *adc_b = b;
 
-void kscan_adc_sort_keys_by_channel(struct kscan_he_group_cfg *group_cfg) {
-    qsort(group_cfg->keys, group_cfg->key_count,
-          sizeof(struct kscan_he_key_cfg), compare_key_channel);
-}
+//     return ((int)adc_a->adc.channel_id) - ((int)adc_b->adc.channel_id);
+// }
+
+// void kscan_adc_sort_keys_by_channel(struct kscan_he_group_cfg *group_cfg) {
+//     qsort(group_cfg->keys, group_cfg->key_count,
+//           sizeof(struct kscan_he_key_cfg), compare_key_channel);
+// }
 
 int16_t kscan_adc_cfg_deadzone_top(const struct device *dev, uint8_t group,
                                    uint8_t key) {
@@ -25,13 +27,11 @@ int16_t kscan_adc_cfg_deadzone_bottom(const struct device *dev, uint8_t group,
 }
 
 int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group,
-                                    uint8_t key) {
+                                    uint8_t key, int16_t raw_adc_value) {
     struct kscan_he_data *data = dev->data;
     const struct kscan_he_config *config = dev->config;
     const struct kscan_he_group_cfg group_cfg = config->he_groups[group];
     const struct kscan_he_key_cfg key_cfg = group_cfg.keys[key];
-
-    int16_t raw_adc_value = data->adc_groups[group].adc_buffer[key];
 
     int16_t cal_min = key_cfg.calibration_min;
     int16_t cal_max = key_cfg.calibration_max;

@@ -15,7 +15,9 @@
 #include "adc.h"
 // #include <zephyr/sys/util.h>
 
-#define RECALIBRATE_DELAY 2000000
+#ifndef CONFIG_HE_ADC_CALIBRATION_DELAY
+#define CONFIG_HE_ADC_CALIBRATION_DELAY 2000000
+#endif
 
 LOG_MODULE_REGISTER(kscan_he_direct_pulsed,
                     CONFIG_LOG_MAX_LEVEL); // TODO change name
@@ -134,7 +136,7 @@ static void kscan_he_read_end(const struct device *dev) {
 }
 
 static int kscan_he_read(const struct device *dev) {
-    struct kscan_he_config *conf = dev->config;
+    const struct kscan_he_config *conf = dev->config;
     struct kscan_he_data *data = dev->data;
     // k_msleep(3000);
     // LOG_INF("pin high");
@@ -142,16 +144,20 @@ static int kscan_he_read(const struct device *dev) {
         const struct kscan_he_group_cfg group_cfg = conf->he_groups[i];
         int err;
         if (conf->pulse_read) {
+            int64_t before = k_uptime_ticks();
             err = gpio_pin_set_dt(&group_cfg.enable_gpio, 1);
             if (err) {
                 LOG_ERR("Failed to set output %i high: %i",
                         group_cfg.enable_gpio.pin, err);
                 return err;
             }
-            // k_msleep(1000);
-            // LOG_INF("busy wait");
+            // This has less accuracy than k_busy_wait but at least it allows other threads to execute
+            int64_t elapsed=k_ticks_to_us_near64(k_uptime_ticks() - before);
+            if(elapsed < (conf->read_turn_on_time/5)*4){ // if elapsed is less than 80% of the turn on time
+                k_usleep(conf->read_turn_on_time-elapsed);
+            }
 
-            k_busy_wait(conf->read_turn_on_time);
+            // k_busy_wait(conf->read_turn_on_time);
             // k_msleep(1000);
             // LOG_INF("adc read");
         }
@@ -181,17 +187,19 @@ static int kscan_he_read(const struct device *dev) {
     int16_t buf[conf->group_count*conf->he_groups[0].key_count];
     for (int i = 0; i < conf->group_count; i++) {
         const struct kscan_he_group_cfg group_cfg = conf->he_groups[i];
-        for (int8_t channel_ord = 0; channel_ord < group_cfg.key_count;
-             channel_ord++) {
-            const int8_t channel_id =
-                group_cfg.keys[channel_ord].adc.channel_id;
-            const int8_t key_j = data->adc_groups[i].key_channels[channel_id];
+        int8_t buffer_idx=0;
+        for (int8_t channel = 0; channel < KSCAN_ADC_MAX_CHANNELS; channel++) {
+            int8_t channel_mask = BIT(channel);
+            if(!(data->adc_groups[i].as.channels & channel_mask)){
+                continue;
+            }
+            const int8_t key_j = data->adc_groups[i].key_channels[channel];
             const int16_t max_height = conf->he_groups[i].switch_height;
-            const int16_t raw_adc_value = data->adc_groups[i].adc_buffer[channel_ord];
+            const int16_t raw_adc_value = data->adc_groups[i].adc_buffer[buffer_idx];
             
             if(!conf->calibrate){
                 int16_t key_height =
-                    kscan_adc_get_mapped_height(dev, i, channel_ord);
+                    kscan_adc_get_mapped_height(dev, i, key_j, raw_adc_value);
                 const int16_t deadzone_top =
                     kscan_adc_cfg_deadzone_top(dev, i, key_j);
                 const int16_t deadzone_bottom =
@@ -202,7 +210,7 @@ static int kscan_he_read(const struct device *dev) {
                     pressed = true;
                     // send sync only at the last key
                 }
-                input_report(dev, INPUT_EV_HE, INPUT_HE_RC(i, key_j), key_height, (i==conf->group_count-1 && channel_ord == group_cfg.key_count-1), K_FOREVER); //TODO check if timeout is needed
+                input_report(dev, INPUT_EV_HE, INPUT_HE_RC(i, key_j), key_height, (i==conf->group_count-1 && key_j == group_cfg.key_count-1), K_FOREVER); //TODO check if timeout is needed
             }else{
                 pressed = true;
                 buf[i*conf->he_groups[0].key_count + key_j] = raw_adc_value;
@@ -220,6 +228,7 @@ static int kscan_he_read(const struct device *dev) {
             // } else {
             //     // keep old state
             // }
+            buffer_idx++;
         }
     }
     if (conf->calibrate) {
@@ -269,22 +278,17 @@ static void kscan_adc_calibrate_work_handler(struct k_work *work) {
 
     const struct device *dev = data->dev;
 
-    struct kscan_he_config *conf = dev->config;
+    const struct kscan_he_config *conf = dev->config;
     for(int i = 0; i < conf->group_count; i++){
         data->adc_groups[i].as.calibrate = true;
     }
-    k_work_reschedule(&data->adc_read_work, K_TIMEOUT_ABS_MS(RECALIBRATE_DELAY));
-}
-
-static int kscan_he_recalibrate(const struct device *dev){
-    
-    return 0;
+    k_work_reschedule(&data->adc_read_work, K_TIMEOUT_ABS_MS(CONFIG_HE_ADC_CALIBRATION_DELAY));
 }
 
 // driver init function
 static int kscan_he_init(const struct device *dev) {
     struct kscan_he_data *data = dev->data;
-    struct kscan_he_config *conf = dev->config;
+    const struct kscan_he_config *conf = dev->config;
     // TODO this shouldn't modify the config struct, it would be better to copy
     // input_adcs to data and modify that (it wouldn't really change anything
     // but it would look better)
@@ -301,7 +305,7 @@ static int kscan_he_init(const struct device *dev) {
                 conf->he_groups[i].keys[channel_ord].adc.channel_id;
             data->adc_groups[i].key_channels[channel_id] = channel_ord;
         }
-        kscan_adc_sort_keys_by_channel(&conf->he_groups[i]);
+        // kscan_adc_sort_keys_by_channel(&conf->he_groups[i]); //FIXME conf is const so it shouldn't be modified
         data->adc_groups[i].as = (struct adc_sequence){
             .buffer = data->adc_groups[i].adc_buffer,
             .buffer_size = sizeof(int16_t) * (conf->he_groups[i].key_count),
@@ -376,13 +380,13 @@ static int kscan_he_configure(const struct device *dev,
 static int kscan_he_enable(const struct device *dev) {
     LOG_INF("kscan adc enabled");
     struct kscan_he_data *data = dev->data;
-    struct kscan_he_config *conf = dev->config;
+    const struct kscan_he_config *conf = dev->config;
     data->scan_time = k_uptime_get();
     if (!conf->pulse_read) {
         set_all_gpio(dev, 1);
     }
     // calibrate once before use
-    kscan_adc_calibrate_work_handler(&data->adc_calibration_work);
+    kscan_adc_calibrate_work_handler(&data->adc_calibration_work.work);
 
     return kscan_he_read(dev);
 }
@@ -451,9 +455,6 @@ static const struct kscan_driver_api kscan_he_api = {
                  "enable-gpios needs to be defined if pulse-read is enabled"); \
     static int16_t adc_buffer_##inst_id##_##node_id[DT_FOREACH_CHILD_SEP(      \
         node_id, CHILD_COUNT, (+))] = {0};                                     \
-    static int16_t                                                 \
-        last_values##inst_id##_##node_id[DT_FOREACH_CHILD_SEP(              \
-            node_id, CHILD_COUNT, (+))] = {0};                                 \
     static int8_t key_channels_##inst_id##_##node_id[KSCAN_ADC_MAX_CHANNELS] = \
         {0};                                                                   \
     static struct kscan_he_key_cfg keys_##inst_id##_##node_id[] = {            \

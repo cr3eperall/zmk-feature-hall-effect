@@ -56,9 +56,9 @@ struct kscan_he_config {
     bool calibrate;
 };
 
-static int compare_key_channel(const void *a, const void *b);
+// static int compare_key_channel(const void *a, const void *b);
 
-void kscan_adc_sort_keys_by_channel(struct kscan_he_group_cfg *group_cfg);
+// void kscan_adc_sort_keys_by_channel(struct kscan_he_group_cfg *group_cfg);
 
 // void adc_key_state_update(struct adc_key_state *state, bool pressed, int16_t value);
 
@@ -70,4 +70,4 @@ int16_t kscan_adc_cfg_deadzone_top(const struct device *dev, uint8_t group, uint
 int16_t kscan_adc_cfg_deadzone_bottom(const struct device *dev, uint8_t group, uint8_t key);
 
 // Get the current height of a key from the adc buffer
-int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group, uint8_t key);
+int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group, uint8_t key, int16_t raw_adc_value);
