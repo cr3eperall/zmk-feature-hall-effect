@@ -5,6 +5,7 @@
 #include <zephyr/device.h>
 #include <zephyr/logging/log.h>
 #include <zmk/virtual_key_position.h>
+#include <zmk/keymap.h>
 #include <zmk/events/position_state_changed.h>
 
 #include "input-event-codes.h"
@@ -53,13 +54,55 @@ struct adj_act_data {
     struct key_state *key_states;
 };
 
+int adj_act_trigger_key(const struct device *dev, struct input_event *event, struct zmk_input_processor_state *state, int pos_idx, bool pressed) {
+    const struct adj_act_config *conf = dev->config;
+    const struct adj_act_data *data = dev->data;
+    if(conf->kscan_passthrough){
+        return kscan_forwarder_forward(conf->kscan_forwarder,
+            INV_INPUT_HE_ROW(event->code), INV_INPUT_HE_COL(event->code),
+            pressed);
+    }else{
+        for (int j = 0; j < conf->positions[pos_idx].bindings_len; j++) {
+            struct zmk_behavior_binding_event behavior_event = {
+                .position =
+                    ZMK_VIRTUAL_KEY_POSITION_BEHAVIOR_INPUT_PROCESSOR(
+                        state->input_device_index, conf->index), // I could use the real position of the key but it would require a pointer to the transform matrix
+                .timestamp = k_uptime_get(),
+#if IS_ENABLED(CONFIG_ZMK_SPLIT)
+                .source = ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL,
+#endif
+            };
+            // reverse the order of the bindings when returning up
+            int behavior_idx = pressed ? j : conf->positions[pos_idx].bindings_len - j - 1;
+            int ret = zmk_behavior_invoke_binding(
+                &conf->positions[pos_idx].bindings[behavior_idx], behavior_event,
+                pressed);
+            if (ret < 0) {
+                LOG_ERR("Error invoking behavior binding[%d]: %d",
+                        behavior_idx, ret);
+                return ret;
+            }
+        }
+    }
+}
+
+int adj_act_set_key_state(const struct device *dev, struct input_event *event, struct zmk_input_processor_state *state, int pos_idx, uint32_t key_idx, bool pressed){
+    struct adj_act_data *data = dev->data;
+    struct key_state *key_state = &data->key_states[key_idx];
+    if(key_state->last_state==pressed){
+        return 0;
+    }
+    int ret = adj_act_trigger_key(dev, event, state, pos_idx, pressed);
+    key_state->last_state=pressed;
+    return ret;
+}
+
 static int adj_act_handle_event(const struct device *dev,
                                 struct input_event *event, uint32_t key_idx,
                                 uint32_t param2,
                                 struct zmk_input_processor_state *state) {
     const struct adj_act_config *conf = dev->config;
     struct adj_act_data *data = dev->data;
-    bool processed = false;
     if (event->type != INPUT_EV_HE)
         return ZMK_INPUT_PROC_CONTINUE;
     enum direction_e excluded_dir;
@@ -75,20 +118,15 @@ static int adj_act_handle_event(const struct device *dev,
         trigger_offset = conf->sensitivity / 2;
         pressed=false;
     }
-    LOG_INF("adj_act_handle_event, key_idx: %d, event: %d, last_value: %d, last_state: %d",
-            key_idx, event->value, key_state->last_value,
-            key_state->last_state);
+    // LOG_INF("adj_act_handle_event, key_idx: %d, event: %d, last_value: %d, last_state: %d",
+    //         key_idx, event->value, key_state->last_value,
+    //         key_state->last_state);
     for (int i = -1; i < conf->positions_len; i++) {
         if(i==-1 && conf->kscan_passthrough) {
             int trigger_pos =
                 conf->kscan_passthrough_position + trigger_offset;
             if (CHECK_TRIGGER(trigger_pos, event->value, key_state->last_value, pressed)) {
-                if(key_state->last_state == pressed) continue;
-                key_state->last_state=pressed;
-                LOG_INF("triggering passthrough at tp:%d, val:%d, dir:%d", trigger_pos, event->value, pressed);
-                int ret = kscan_forwarder_forward(conf->kscan_forwarder,
-                                        INV_INPUT_HE_ROW(event->code),
-                                        INV_INPUT_HE_COL(event->code), pressed);
+                int ret =adj_act_set_key_state(dev, event, state, i, key_idx, pressed);
                 if (ret < 0) {
                     LOG_ERR("Error invoking kscan forwarder: %d", ret);
                     key_state->last_value = event->value;
@@ -103,27 +141,11 @@ static int adj_act_handle_event(const struct device *dev,
         if(conf->positions[i].direction == excluded_dir) continue;
         int trigger_pos = conf->positions[i].position + trigger_offset;
         if (CHECK_TRIGGER(trigger_pos, event->value, key_state->last_value, pressed)) {
-            if(key_state->last_state == pressed) continue;
-            key_state->last_state=pressed;
-            for (int j = 0; j < conf->positions[i].bindings_len; j++) {
-                struct zmk_behavior_binding_event behavior_event = {
-                    .position =
-                        ZMK_VIRTUAL_KEY_POSITION_BEHAVIOR_INPUT_PROCESSOR(
-                            state->input_device_index, conf->index), // I could use the real position of the key but it would require a pointer to the transform matrix
-                    .timestamp = k_uptime_get(),
-#if IS_ENABLED(CONFIG_ZMK_SPLIT)
-                    .source = ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL,
-#endif
-                };
-                int ret = zmk_behavior_invoke_binding(
-                    &conf->positions[i].bindings[j], behavior_event,
-                    pressed);
-                if (ret < 0) {
-                    LOG_ERR("Error invoking behavior position[%d]binding[%d]: %d",
-                            i, j, ret);
-                    key_state->last_value = event->value;
-                    return ret;
-                }
+            int ret =adj_act_set_key_state(dev, event, state, i, key_idx, pressed);
+            if (ret < 0) {
+                LOG_ERR("Error invoking behavior binding: %d", ret);
+                key_state->last_value = event->value;
+                return ret;
             }
         }
     }
@@ -150,12 +172,12 @@ static struct zmk_input_processor_driver_api processor_api = {
 #define ADJ_ACT_POS_ENTRY_INIT(node, n)                                        \
     static const struct zmk_behavior_binding                                   \
         adj_act_behaviors_bindings_##n##_##node[] = {                          \
-            LISTIFY(DT_INST_PROP_LEN(node, bindings),                          \
+            LISTIFY(DT_PROP_LEN(node, bindings),                          \
                     ZMK_KEYMAP_EXTRACT_BINDING, (, ), node)};                  \
     static const struct adj_act_behavior_config                                \
         adj_act_behaviors_conf_##n##_##node = {                                \
-            .position = DT_INST_PROP(node, position),                          \
-            .direction = DT_INST_ENUM_IDX(node, direction),                    \
+            .position = DT_PROP(node, position),                          \
+            .direction = DT_ENUM_IDX(node, direction),                    \
             .bindings = adj_act_behaviors_bindings_##n##_##node,               \
             .bindings_len =                                                    \
                 ARRAY_SIZE(adj_act_behaviors_bindings_##n##_##node),           \
@@ -166,7 +188,7 @@ static struct zmk_input_processor_driver_api processor_api = {
 #define ADJ_ACT_ONE(...) +1
 
 #define ADJ_ACT_INIT(n)                                                        \
-    DT_INST_FOREACH_CHILD_VARGS(n, ADJ_ACT_POS_ENTRY_INIT, (, ), n)            \
+    DT_INST_FOREACH_CHILD_SEP_VARGS(n, ADJ_ACT_POS_ENTRY_INIT, (, ), n)            \
     static const struct adj_act_config adj_act_config_##n = {                  \
         .index = n,                                                            \
         .sensitivity = DT_INST_PROP(n, sensitivity),                           \

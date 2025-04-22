@@ -1,7 +1,7 @@
 # Copyright (c) 2025, cr3eperall
 # SPDX-License-Identifier: MIT
 
-description: Hall effect kscan controller that produces INPUT_HE_RC analog inputs
+description: Hall effect kscan controller that produces INPUT_HE_RC analog inputs in micrometers of height
 
 compatible: "zmk,kscan-he-direct-pulsed"
 
@@ -33,6 +33,16 @@ properties:
   calibrate:
     description: Print the raw values to serial and don't send them to the input listener
     type: boolean
+  polyfit:
+    description: Polynomial fit coefficients as an array of floats represented as 32-bit hex integers(first coefficient is the highest degree coefficient, last is the constant term)
+    type: array
+    default: #coefficients calculated for Gateron low profile magnetic jade pro
+      - 0x408b2298
+      - 0xc1167de4
+      - 0x40fed831
+      - 0xc02b2742
+      - 0x3f404977
+      - 0x3bd693e5
 
 child-binding:
   description: Per enable-gpio group configuration

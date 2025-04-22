@@ -83,8 +83,8 @@ static int raw_sp_init(const struct device *dev) {
     }
     for (int i = 0; i < conf->n_coeffs; i++) {
         int32_t coeff_i = conf->filter_coeffs_int32[i];
-        float *coeff_d = (float *)&coeff_i;
-        data->coeffs[i] = *coeff_d;
+        float *coeff_f = (float *)&coeff_i;
+        data->coeffs[i] = *coeff_f;
     }
     LOG_INF("raw signal processor init");
 
@@ -156,6 +156,7 @@ static int raw_sp_handle_event(const struct device *dev,
         return ZMK_INPUT_PROC_STOP;
     } else {
         // LOG_INF("CONT dzone");
+        // LOG_INF("RC(%d,%d), val: %d", row, col, (int32_t)event->value);
         data->key_data[key_data_idx].last_report_time = now;
         data->key_data[key_data_idx].last_value = (int16_t)event->value;
         return ZMK_INPUT_PROC_CONTINUE;

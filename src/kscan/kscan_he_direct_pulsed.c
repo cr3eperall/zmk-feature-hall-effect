@@ -315,7 +315,12 @@ static int kscan_he_init(const struct device *dev) {
             .oversampling = 0,
             .resolution = conf->resolution};
     }
-
+    data->polyfit = malloc(conf->n_coeffs * sizeof(float));
+    for (int i = 0; i < conf->n_coeffs; i++) {
+        int32_t coeff_i = conf->polyfit_int32[i];
+        float *coeff_f = (float *)&coeff_i;
+        data->polyfit[i] = *coeff_f;
+    }
     // init kwork
     k_work_init_delayable(&data->adc_read_work, kscan_adc_read_work_handler);
     k_work_init_delayable(&data->adc_calibration_work, kscan_adc_calibrate_work_handler);
@@ -478,6 +483,9 @@ static const struct kscan_driver_api kscan_he_api = {
         .he_groups = kscan_he_group_cfg_##n,                                   \
         .kscan_forwarder = DEVICE_DT_GET_OR_NULL(DT_INST_PHANDLE(n, kscan_forwarder)), \
         .calibrate = DT_INST_PROP(n, calibrate),                              \
+        .n_coeffs = DT_INST_PROP_LEN(n, polyfit),                  \
+        .polyfit_int32 = {DT_INST_FOREACH_PROP_ELEM_SEP(                       \
+            n, polyfit, DT_PROP_BY_IDX, (, ))},                                 \
     };                                                                         \
     PM_DEVICE_DT_INST_DEFINE(n, kscan_he_pm_action);                           \
     DEVICE_DT_INST_DEFINE(n, &kscan_he_init, PM_DEVICE_DT_INST_GET(n),         \

@@ -24,6 +24,7 @@ struct kscan_he_data {
     struct k_work_delayable adc_read_work;
     struct k_work_delayable adc_calibration_work;
     int64_t scan_time;
+    float *polyfit;
 };
 
 struct kscan_he_key_cfg {
@@ -54,6 +55,8 @@ struct kscan_he_config {
     struct kscan_he_group_cfg *he_groups;
     const struct device *kscan_forwarder;
     bool calibrate;
+    int16_t n_coeffs;
+    int32_t polyfit_int32[];
 };
 
 // static int compare_key_channel(const void *a, const void *b);
@@ -71,3 +74,4 @@ int16_t kscan_adc_cfg_deadzone_bottom(const struct device *dev, uint8_t group, u
 
 // Get the current height of a key from the adc buffer
 int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group, uint8_t key, int16_t raw_adc_value);
+float polyeval(float *coeffs, int16_t n_coeffs, float x);

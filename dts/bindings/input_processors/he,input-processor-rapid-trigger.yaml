@@ -1,0 +1,31 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Input processor for triggering a kscan signal or behavior based on the direction of the key
+
+compatible: "he,input-processor-rapid-trigger"
+
+include: ip_one_param.yaml
+
+properties:
+  sensitivity:
+    description: Controls how big is the window from the press to the release point
+    type: int
+    required: true
+  kscan-passthrough:
+    description: Ignore the behaviors defined here and use the ones defined in zmk,keymap
+    type: boolean
+  kscan-forwarder:
+    description: The kscan forwarder to use for this input processor
+    type: phandle
+  keymap-size:
+    description: The number of keys that will use this input processor
+    type: int
+    required: true
+  actuation-point:
+    description: When the rapid trigger will be enabled
+    type: int
+    required: true
+  bindings:
+    description: List of behaviors to execute
+    type: phandle-array

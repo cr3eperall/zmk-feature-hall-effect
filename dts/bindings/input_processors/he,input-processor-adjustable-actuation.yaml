@@ -11,6 +11,7 @@ properties:
   sensitivity:
     description: Controls how big is the window from the press to the release point
     type: int
+    required: true
   kscan-passthrough:
     description: Ignore the behaviors defined here and use the ones defined in zmk,keymap
     type: boolean
@@ -23,6 +24,7 @@ properties:
   keymap-size:
     description: The number of keys that will use this input processor
     type: int
+    required: true
 
 child-binding:
   description: "A behavior to execute when the sensor reaches a certain position"
@@ -31,9 +33,11 @@ child-binding:
     position:
       description: The position at which the behavior will be executed
       type: int
+      required: true
     direction:
       description: The direction of the behavior
       type: string
+      default: both
       enum:
         - up
         - down

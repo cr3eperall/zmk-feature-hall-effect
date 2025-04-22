@@ -11,6 +11,7 @@ properties:
   transform:
     description: The matrix transform to use along with this layout
     type: phandle
+    required: true
 
 child-binding:
   description: "A layer to be used in a keymap"
