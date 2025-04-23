@@ -23,7 +23,7 @@ properties:
     type: int
     required: true
   actuation-point:
-    description: When the rapid trigger will be enabled
+    description: When rapid trigger will be enabled
     type: int
     required: true
   bindings:

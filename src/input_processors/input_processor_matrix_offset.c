@@ -3,7 +3,7 @@
 #include <zephyr/device.h>
 #include <zephyr/logging/log.h>
 
-#include "input-event-codes.h"
+#include <he/input-event-codes.h>
 
 LOG_MODULE_REGISTER(input_processor_matrix_offset,
                     CONFIG_LOG_MAX_LEVEL);  // TODO change log level

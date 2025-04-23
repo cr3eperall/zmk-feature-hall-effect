@@ -1,0 +1,47 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Input processor for Simultaneous Opposing Cardinal Directions (SOCD) 
+
+compatible: "he,input-processor-socd"
+
+include: ip_one_param.yaml
+
+properties:
+  sensitivity:
+    description: Controls how big is the window from the press to the release point
+    type: int
+    required: true
+  equal-sensitivity:
+    description: Only works for priority_deeper, controls how big is the distance in which both keys will be pressed, \
+                set to 0 to disable (only one key pressed at a time), minimum value when enabled is `sensitivity`
+    type: int
+    default: 0
+  kscan-passthrough:
+    description: Ignore the behaviors defined here and use the ones defined in zmk,keymap
+    type: boolean
+  kscan-forwarder:
+    description: The kscan forwarder to use for this input processor
+    type: phandle
+  actuation-point:
+    description: When socd will be enabled
+    type: int
+    required: true
+  behaviors-first-n:
+    description: the number of behaviors for the first key
+    type: int
+    default: 1
+  bindings:
+    description: List of behaviors to execute(first bindings-first-n behaviors will be used for the first key, the rest for the second key) 
+    type: phandle-array
+  type:
+    description: The type of SOCD to use
+    type: string
+    default: priority_last
+    enum:
+      - priority_last # the last key to trigger will be the only one presed
+      - priority_first # the first key to trigger will be the only one presed, the other will be ignored
+      - priority_deeper # the key that is pressed the furthest will be the only one pressed, see `equal-sensitivity` for more configuration options
+      - priority_direction # a combination of priority_last and rapid trigger
+      - priority_0 # the first bound key will be the only one pressed, the other will be ignored
+      - priority_1 # the second bound key will be the only one pressed, the other will be ignored

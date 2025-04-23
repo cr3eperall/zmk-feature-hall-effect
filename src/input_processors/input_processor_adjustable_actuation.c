@@ -8,7 +8,7 @@
 #include <zmk/keymap.h>
 #include <zmk/events/position_state_changed.h>
 
-#include "input-event-codes.h"
+#include <he/input-event-codes.h>
 
 LOG_MODULE_REGISTER(input_processor_adjustable_actuation,
                     CONFIG_LOG_MAX_LEVEL); // TODO change log level

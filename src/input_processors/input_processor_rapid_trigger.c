@@ -9,7 +9,7 @@
 #include <zmk/events/position_state_changed.h>
 #include <zmk/keymap.h>
 
-#include "input-event-codes.h"
+#include <he/input-event-codes.h>
 
 LOG_MODULE_REGISTER(input_processor_rapid_trigger,
                     CONFIG_LOG_MAX_LEVEL); // TODO change log level
@@ -118,6 +118,9 @@ static int rt_handle_event(const struct device *dev,
         return ZMK_INPUT_PROC_STOP;
     }
     int ret=0;
+    //TODO currently this works by setting the trigger point in steps of `sensitivity/2`
+    // it could be more precise by saving the minimum or maximum value reached and triggering based on that
+    // but it works well enough for now
     if (event->value < key_state->last_value - trigger_offset) { // going down
         ret=rt_set_key_state(dev, event, state, key_idx, true);
     }else if(event->value > key_state->last_value + trigger_offset){ // going up

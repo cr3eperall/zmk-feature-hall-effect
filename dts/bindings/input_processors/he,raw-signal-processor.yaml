@@ -33,8 +33,8 @@ properties:
     description: The working area the sensor, if the signal is outside of this bound, it will not be propagated
     type: array
     default:
-      - 150
-      - 3150
+      - 200
+      - 3100
   sample-div:
     description: lets an input for a key pass only once every `sample-div`*`wait-period-press` milliseconds, (this applies individually to every key position)
     type: int

@@ -6,5 +6,6 @@ add_subdirectory_ifdef(CONFIG_INPUT src/input/)
 target_sources(app PRIVATE src/adc.c)
 
 zephyr_include_directories(include)
+zephyr_include_directories(include/he)
 
 zephyr_syscall_header(include/drivers/kscan_forwarder.h)

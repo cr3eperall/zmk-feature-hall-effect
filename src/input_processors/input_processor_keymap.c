@@ -7,7 +7,7 @@
 #include <zmk/matrix_transform.h>
 #include <zmk/physical_layouts.h>
 
-#include "input-event-codes.h"
+#include <he/input-event-codes.h>
 
 LOG_MODULE_REGISTER(input_processor_keymap,
                     CONFIG_LOG_MAX_LEVEL); // TODO change log level
