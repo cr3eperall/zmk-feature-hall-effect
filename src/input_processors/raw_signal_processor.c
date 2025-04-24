@@ -174,6 +174,9 @@ static struct zmk_input_processor_driver_api signal_processor_api = {
                  "Matrix size must contain 2 values");                        \
     BUILD_ASSERT(DT_INST_PROP_LEN(n, working_area) == 2,                      \
                  "Working area must contain 2 values");                       \
+    BUILD_ASSERT(DT_INST_PROP_BY_IDX(n, working_area, 0) <                    \
+                DT_INST_PROP_BY_IDX( n, working_area, 1),                     \
+                 "Working area bottom must be less than top");                \
     static struct raw_signal_processor_data raw_signal_processor_data_##n = { \
         .sections = DT_INST_PROP_LEN(n, filter_coefficients) / 6,             \
     };                                                                        \

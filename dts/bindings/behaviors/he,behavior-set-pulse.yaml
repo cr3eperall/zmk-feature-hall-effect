@@ -1,0 +1,17 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Set the pulse mode of kscan-he-direct-pulsed
+
+compatible: "he,behavior-set-pulse"
+
+include: one_param.yaml
+
+# param1==0: disable pulse mode
+# param1==1: enable pulse mode
+# param1==2: toggle pulse mode
+properties:
+  kscan-forwarder:
+    description: The kscan forwarder to use for this behavior
+    type: phandle
+    required: true

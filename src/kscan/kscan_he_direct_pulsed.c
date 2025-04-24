@@ -22,7 +22,7 @@
 LOG_MODULE_REGISTER(kscan_he_direct_pulsed,
                     CONFIG_LOG_MAX_LEVEL); // TODO change name
 
-#define DT_DRV_COMPAT zmk_kscan_he_direct_pulsed
+#define DT_DRV_COMPAT he_kscan_he_direct_pulsed
 
 static int init_adc(const struct device *dev) {
     const struct kscan_he_config *conf = dev->config;
@@ -54,7 +54,8 @@ static int init_adc(const struct device *dev) {
 
 static int init_gpio(const struct device *dev) {
     const struct kscan_he_config *conf = dev->config;
-    if (!conf->pulse_read)
+    struct kscan_he_data *data = dev->data;
+    if (!data->pulse_enabled)
         LOG_DBG("Pulse read disabled");
     for (int i = 0; i < conf->group_count; i++) {
         const struct gpio_dt_spec gpio = conf->he_groups[i].enable_gpio;
@@ -66,7 +67,7 @@ static int init_gpio(const struct device *dev) {
             return -ENODEV;
         }
         int err;
-        if (conf->pulse_read) {
+        if (data->pulse_enabled) {
             err = gpio_pin_configure_dt(&gpio,
                                         GPIO_OUTPUT | GPIO_OUTPUT_INIT_LOW);
         } else {
@@ -143,7 +144,7 @@ static int kscan_he_read(const struct device *dev) {
     for (int i = 0; i < conf->group_count; i++) {
         const struct kscan_he_group_cfg group_cfg = conf->he_groups[i];
         int err;
-        if (conf->pulse_read) {
+        if (data->pulse_enabled) {
             int64_t before = k_uptime_ticks();
             err = gpio_pin_set_dt(&group_cfg.enable_gpio, 1);
             if (err) {
@@ -174,7 +175,7 @@ static int kscan_he_read(const struct device *dev) {
         }
         // k_msleep(1000);
         // LOG_INF("pin low");
-        if (conf->pulse_read) {
+        if (data->pulse_enabled) {
             err = gpio_pin_set_dt(&group_cfg.enable_gpio, 0);
             if (err) {
                 LOG_ERR("Failed to set output %i low: %i",
@@ -285,6 +286,20 @@ static void kscan_adc_calibrate_work_handler(struct k_work *work) {
     k_work_reschedule(&data->adc_read_work, K_TIMEOUT_ABS_MS(CONFIG_HE_ADC_CALIBRATION_DELAY));
 }
 
+static int kscan_he_pulse_set(const struct device *dev, bool pulse_enable){
+    const struct kscan_he_config *conf = dev->config;
+    struct kscan_he_data *data = dev->data;
+    if(data->pulse_enabled==pulse_enable){
+        return 0;
+    }
+    data->pulse_enabled=pulse_enable;
+    if(pulse_enable){
+        return set_all_gpio(dev, 0);
+    }else{
+        return set_all_gpio(dev, 1);
+    }
+}
+
 // driver init function
 static int kscan_he_init(const struct device *dev) {
     struct kscan_he_data *data = dev->data;
@@ -298,6 +313,7 @@ static int kscan_he_init(const struct device *dev) {
     }
     data->dev = dev;
     data->scan_time = k_uptime_get();
+    data->pulse_enabled=conf->pulse_read;
     for (int i = 0; i < conf->group_count; i++) {
         for (int8_t channel_ord = 0; channel_ord < conf->he_groups[i].key_count;
              channel_ord++) {
@@ -320,6 +336,13 @@ static int kscan_he_init(const struct device *dev) {
         int32_t coeff_i = conf->polyfit_int32[i];
         float *coeff_f = (float *)&coeff_i;
         data->polyfit[i] = *coeff_f;
+    }
+    if(conf->kscan_forwarder){
+        int err = kscan_forwarder_config_pulse_set(conf->kscan_forwarder, kscan_he_pulse_set);
+        if (err) {
+            LOG_ERR("Error during forwarder config_pulse_set: %d", err);
+            return err;
+        }
     }
     // init kwork
     k_work_init_delayable(&data->adc_read_work, kscan_adc_read_work_handler);
@@ -387,7 +410,7 @@ static int kscan_he_enable(const struct device *dev) {
     struct kscan_he_data *data = dev->data;
     const struct kscan_he_config *conf = dev->config;
     data->scan_time = k_uptime_get();
-    if (!conf->pulse_read) {
+    if (!data->pulse_enabled) {
         set_all_gpio(dev, 1);
     }
     // calibrate once before use

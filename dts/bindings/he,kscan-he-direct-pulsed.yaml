@@ -3,7 +3,7 @@
 
 description: Hall effect kscan controller that produces INPUT_HE_RC analog inputs in micrometers of height
 
-compatible: "zmk,kscan-he-direct-pulsed"
+compatible: "he,kscan-he-direct-pulsed"
 
 include: kscan.yaml
 

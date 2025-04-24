@@ -1,0 +1,46 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Input processor for mapping an hall effect input to a mouse input
+
+compatible: "he,input-processor-mouse-forwarder"
+
+include: ip_one_param.yaml
+
+properties:
+  accumulation-time:
+    description: The time in milliseconds to accumulate the xy inputs, a sync event will be sent when the time is up
+    type: int
+    default: 2
+  time-to-max-speed-ms:
+    type: int
+    required: true
+  acceleration-exponent:
+    type: int
+    default: 1
+  # max-accumulation-time:
+  #   description: The maximum time in milliseconds to keep old xy inputs, if no events happen between the min and the max, the accumulated events will be discarded
+  #   type: int
+  #   default: 10
+  working-area:
+    description: The working area the input, if the signal is outside of this bound, it will not be propagated
+    type: array
+    default: 
+      - 500
+      - 2800
+  scale-x-float:
+    description: Scale the x axis of the mouse input
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-y-float:
+    description: Scale the y axis of the mouse input
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-h-wheel-float:
+    description: Scale the horizontal wheel axis of the mouse input
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-v-wheel-float:
+    description: Scale the vertical wheel axis of the mouse input
+    type: int
+    default: 0x40a00000 # 5.0

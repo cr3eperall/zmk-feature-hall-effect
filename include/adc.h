@@ -24,6 +24,7 @@ struct kscan_he_data {
     struct k_work_delayable adc_read_work;
     struct k_work_delayable adc_calibration_work;
     int64_t scan_time;
+    bool pulse_enabled;
     float *polyfit;
 };
 

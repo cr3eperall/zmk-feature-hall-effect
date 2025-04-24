@@ -1,0 +1,9 @@
+#define MOUSE_X_LEFT 0
+#define MOUSE_Y_UP 1
+#define MOUSE_X_RIGHT 2
+#define MOUSE_Y_DOWN 3
+#define MOUSE_H_WHEEL_LEFT 4
+#define MOUSE_V_WHEEL_UP 5
+#define MOUSE_H_WHEEL_RIGHT 6
+#define MOUSE_V_WHEEL_DOWN 7
+#define MOUSE_CODE_COUNT 8

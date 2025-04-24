@@ -47,7 +47,7 @@ int16_t kscan_adc_get_mapped_height(const struct device *dev, uint8_t group,
     }
     height_float = polyeval(data->polyfit, conf->n_coeffs, height_float);
 
-    int16_t height = round(height_float * group_cfg.switch_height);
+    int16_t height = roundf(height_float * group_cfg.switch_height);
     return height;
 }
 
