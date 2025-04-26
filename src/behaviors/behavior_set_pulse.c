@@ -49,32 +49,36 @@ struct set_pulse_data {
     bool pulse_enabled;
 };
 
-static int on_set_pulse_binding_pressed(struct zmk_behavior_binding *binding,
+static int
+on_set_pulse_binding_pressed(struct zmk_behavior_binding *binding,
                              struct zmk_behavior_binding_event event) {
-    const struct device *dev = binding->behavior_dev;
+                                
+    const struct device *dev = zmk_behavior_get_binding(binding->behavior_dev);
     const struct set_pulse_config *config = dev->config;
     struct set_pulse_data *data = dev->data;
-    if(binding->param1==0){
+    if (binding->param1 == 0) {
         data->pulse_enabled = false;
         return kscan_forwarder_pulse_set(config->kscan_forwarder, false);
-    }else if(binding->param1==1){
+    } else if (binding->param1 == 1) {
         data->pulse_enabled = true;
         return kscan_forwarder_pulse_set(config->kscan_forwarder, true);
-    }else if(binding->param1==2){
+    } else if (binding->param1 == 2) {
         data->pulse_enabled = !data->pulse_enabled;
-        return kscan_forwarder_pulse_set(config->kscan_forwarder, data->pulse_enabled);
+        return kscan_forwarder_pulse_set(config->kscan_forwarder,
+                                         data->pulse_enabled);
     }
-    if(data->pulse_enabled){
+    if (data->pulse_enabled) {
         LOG_DBG("Pulse enabled");
-    } else{
+    } else {
         LOG_DBG("Pulse disabled");
     }
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
-static int on_set_pulse_binding_released(struct zmk_behavior_binding *binding,
+static int
+on_set_pulse_binding_released(struct zmk_behavior_binding *binding,
                               struct zmk_behavior_binding_event event) {
-    
+
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
@@ -94,7 +98,12 @@ static const struct behavior_driver_api behavior_key_press_driver_api = {
 };
 
 #define HE_SET_PULSE_INST(n)                                                   \
-    BEHAVIOR_DT_INST_DEFINE(n, NULL, NULL, NULL, NULL, POST_KERNEL,            \
+    static const struct set_pulse_config set_pulse_config_##n = {              \
+        .kscan_forwarder = DEVICE_DT_GET(DT_INST_PHANDLE(n, kscan_forwarder)), \
+    };                                                                         \
+    static struct set_pulse_data set_pulse_data_##n = {0};                     \
+    BEHAVIOR_DT_INST_DEFINE(n, &set_pulse_init, NULL, &set_pulse_data_##n,     \
+                            &set_pulse_config_##n, POST_KERNEL,                \
                             CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,               \
                             &behavior_key_press_driver_api);
 

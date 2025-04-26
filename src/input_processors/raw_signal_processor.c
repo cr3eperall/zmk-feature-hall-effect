@@ -54,7 +54,7 @@ float apply_sos_filter(const struct device *dev, int row, int col,
         const float b0 = sos[i * 6];
         const float b1 = sos[i * 6 + 1];
         const float b2 = sos[i * 6 + 2];
-        const float a0 = sos[i * 6 + 3];  // should be normalized to 1
+        // const float a0 = sos[i * 6 + 3];  // should be normalized to 1
         const float a1 = sos[i * 6 + 4];
         const float a2 = sos[i * 6 + 5];
         float y = b0 * output + state->z1;

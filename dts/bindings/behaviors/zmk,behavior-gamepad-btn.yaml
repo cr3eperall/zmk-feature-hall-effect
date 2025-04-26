@@ -1,0 +1,8 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Send a gamepad button event
+
+compatible: "zmk,behavior-gamepad-btn"
+
+include: one_param.yaml

@@ -16,19 +16,10 @@ LOG_MODULE_REGISTER(input_processor_mouse_forwarder,
 
 struct mouse_forwarder_data {
     const struct device *dev;
-    float scale_x;
-    float scale_y;
-    float scale_h_wheel;
-    float scale_v_wheel;
+    float scale[MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT)];
     int64_t accumulation_start;
-    float accumulator_x;
-    int64_t acceleration_start_x;
-    float accumulator_y;
-    int64_t acceleration_start_y;
-    float accumulator_h_wheel;
-    int64_t acceleration_start_h_wheel;
-    float accumulator_v_wheel;
-    int64_t acceleration_start_v_wheel;
+    float accumulator[MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT)];
+    int64_t acceleration_start[MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT)];
     int16_t last_values[MOUSE_CODE_COUNT];
     struct k_work_delayable work;
 };
@@ -48,33 +39,15 @@ void update_acceleration_start(const struct device *dev){
     struct mouse_forwarder_data *data = dev->data;
     const struct mouse_forwarder_config *conf = dev->config;
     int limit = conf->deadzone_top;
-    if(data->last_values[MOUSE_X_LEFT]<limit || data->last_values[MOUSE_X_RIGHT]<limit){
-        if(data->acceleration_start_x==0){
-            data->acceleration_start_x=k_uptime_get();
+    for (int i = 0; i < MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT); i++) {
+        if (data->last_values[2 * i] < limit ||
+            data->last_values[2 * i + 1] < limit) {
+            if (data->acceleration_start[i] == 0) {
+                data->acceleration_start[i] = k_uptime_get();
+            }
+        } else {
+            data->acceleration_start[i] = 0;
         }
-    }else{
-        data->acceleration_start_x=0;
-    }
-    if(data->last_values[MOUSE_Y_UP]<limit || data->last_values[MOUSE_Y_DOWN]<limit){
-        if(data->acceleration_start_y==0){
-            data->acceleration_start_y=k_uptime_get();
-        }
-    }else{
-        data->acceleration_start_y=0;
-    }
-    if(data->last_values[MOUSE_H_WHEEL_LEFT]<limit || data->last_values[MOUSE_H_WHEEL_RIGHT]<limit){
-        if(data->acceleration_start_h_wheel==0){
-            data->acceleration_start_h_wheel=k_uptime_get();
-        }
-    }else{
-        data->acceleration_start_h_wheel=0;
-    }
-    if(data->last_values[MOUSE_V_WHEEL_UP]<limit || data->last_values[MOUSE_V_WHEEL_DOWN]<limit){
-        if(data->acceleration_start_v_wheel==0){
-            data->acceleration_start_v_wheel=k_uptime_get();
-        }
-    }else{
-        data->acceleration_start_v_wheel=0;
     }
 }
 
@@ -95,39 +68,15 @@ float acceleration_mult(const struct device *dev, int64_t start_time){
 
 int accumulate(const struct device *dev, float value, int key_type){
     struct mouse_forwarder_data *data = dev->data;
-    switch(key_type){
-        case MOUSE_X_LEFT: // x left
-            data->accumulator_x-=value*acceleration_mult(dev, data->acceleration_start_x);
-            break;
-        case MOUSE_Y_UP: // y up
-            data->accumulator_y-=value*acceleration_mult(dev, data->acceleration_start_y);
-            break;
-        case MOUSE_X_RIGHT: // x right
-            data->accumulator_x+=value*acceleration_mult(dev, data->acceleration_start_x);
-            break;
-        case MOUSE_Y_DOWN: // y down
-            data->accumulator_y+=value*acceleration_mult(dev, data->acceleration_start_y);
-            break;
-        case MOUSE_H_WHEEL_LEFT: // h wheel left //TODO check if directions are correct
-            data->accumulator_h_wheel-=value*acceleration_mult(dev, data->acceleration_start_h_wheel);
-            break;
-        case MOUSE_V_WHEEL_UP: // v wheel up
-            data->accumulator_v_wheel-=value*acceleration_mult(dev, data->acceleration_start_v_wheel);
-            break;
-        case MOUSE_H_WHEEL_RIGHT: // h wheel right
-            data->accumulator_h_wheel+=value*acceleration_mult(dev, data->acceleration_start_h_wheel);
-            break;
-        case MOUSE_V_WHEEL_DOWN: // v wheel down
-            data->accumulator_v_wheel+=value*acceleration_mult(dev, data->acceleration_start_v_wheel);
-            break;
-        default:
-            LOG_ERR("Unknown key type %d", key_type);
-            return -EINVAL;
+    if(key_type%2==0){
+        data->accumulator[MOUSE_CODE_TO_IDX(key_type)]-=value;
+    }else{
+        data->accumulator[MOUSE_CODE_TO_IDX(key_type)]+=value;
     }
     return 0;
 }
 
-bool must_sync(struct device *dev){
+bool must_sync(const struct device *dev){
     struct mouse_forwarder_data *data = dev->data;
     const struct mouse_forwarder_config *conf = dev->config;
     int64_t now = k_uptime_get();
@@ -136,30 +85,38 @@ bool must_sync(struct device *dev){
     }
     if (now - data->accumulation_start >= conf->accumulation_time) {
         data->accumulation_start = 0;
-        return data->accumulator_x!=0.0 || data->accumulator_y!=0.0 || data->accumulator_h_wheel!=0.0 || data->accumulator_v_wheel!=0.0;
+        for(int i=0; i<MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT); i++){
+            if(data->accumulator[i]!=0.0){
+                return true;
+            }
+        }
+        return false;
     }
     return false;
 }
 
-void send_reports(struct device *dev){
+void send_reports(const struct device *dev){
     struct mouse_forwarder_data *data = dev->data;
     int32_t value;
-    if(data->accumulator_h_wheel!=0.0){
-        value= (int32_t)roundf(data->accumulator_h_wheel*data->scale_h_wheel);
+    int idx=MOUSE_CODE_TO_IDX(MOUSE_H_WHEEL_LEFT);
+    if(data->accumulator[idx]!=0.0){
+        value= (int32_t)roundf(data->accumulator[idx]*data->scale[idx]);
         input_report(dev, INPUT_EV_REL, INPUT_REL_HWHEEL, value, 0, K_NO_WAIT);
     }
-    if(data->accumulator_v_wheel!=0.0){
-        value= (int32_t)roundf(data->accumulator_v_wheel*data->scale_v_wheel);
+    idx=MOUSE_CODE_TO_IDX(MOUSE_V_WHEEL_UP);
+    if(data->accumulator[idx]!=0.0){
+        value= (int32_t)roundf(data->accumulator[idx]*data->scale[idx]);
         input_report(dev, INPUT_EV_REL, INPUT_REL_WHEEL, value, 0, K_NO_WAIT);
     }
-    value= (int32_t)roundf(data->accumulator_x*data->scale_x);
+    idx=MOUSE_CODE_TO_IDX(MOUSE_X_LEFT);
+    value= (int32_t)roundf(data->accumulator[idx]*data->scale[idx]);
     input_report(dev, INPUT_EV_REL, INPUT_REL_X, value, 0, K_NO_WAIT);
-    value= (int32_t)roundf(data->accumulator_y*data->scale_y);
+    idx=MOUSE_CODE_TO_IDX(MOUSE_Y_UP);
+    value= (int32_t)roundf(data->accumulator[idx]*data->scale[idx]);
     input_report(dev, INPUT_EV_REL, INPUT_REL_Y, value, 1, K_NO_WAIT);
-    data->accumulator_x=0.0;
-    data->accumulator_y=0.0;
-    data->accumulator_h_wheel=0.0;
-    data->accumulator_v_wheel=0.0;
+    for(int i=0; i<MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT); i++){
+        data->accumulator[i]=0.0;
+    }
 }
 
 float rescale_working_area(const struct device *dev,int32_t event_value){
@@ -181,13 +138,14 @@ static void send_report_work_handler(struct k_work *work) {
             accumulate(data->dev, scaled, i);
         }
     }
-    active = active || data->accumulator_x!=0.0 || data->accumulator_y!=0.0 || data->accumulator_h_wheel!=0.0 || data->accumulator_v_wheel!=0.0;
-
+    for(int i=0; i<MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT) && !active; i++){
+        active|=data->accumulator[i]!=0.0;
+    }
     if(must_sync(data->dev)){
         send_reports(data->dev);
     }
     if(active){
-        k_work_reschedule(&data->work, K_MSEC(1));
+        k_work_schedule(&data->work, K_MSEC(1));
     }
 }
 
@@ -196,19 +154,19 @@ static int mf_handle_event(const struct device *dev,
                                uint32_t param2,
                                struct zmk_input_processor_state *state) {
     struct mouse_forwarder_data *data = dev->data;
-    const struct mouse_forwarder_config *conf = dev->config;
+    // const struct mouse_forwarder_config *conf = dev->config;
     if (event->type != INPUT_EV_HE) return ZMK_INPUT_PROC_CONTINUE;
-    int output_event_code=0;
-    float scaled=rescale_working_area(dev,event->value);
-    if(key_type>= MOUSE_CODE_COUNT){
+    // int output_event_code=0;
+    // float scaled=rescale_working_area(dev,event->value);
+    if(MOUSE_INVALID(key_type)){
         LOG_ERR("Unknown key type %d", key_type);
         return -EINVAL;
     }
     data->last_values[key_type]=event->value;
-    if(must_sync(dev)){
-        send_reports(dev);
-    }
-    k_work_reschedule(&data->work, K_MSEC(1));
+    // if(must_sync(dev)){
+    //     send_reports(dev);
+    // }
+    k_work_reschedule(&data->work, K_NO_WAIT);
     return ZMK_INPUT_PROC_STOP;
 }
 
@@ -221,19 +179,15 @@ static int mf_init(const struct device *dev) {
     float *scale_y = (float *)&conf->scale_y_int32;
     float *scale_h_wheel = (float *)&conf->scale_h_wheel_int32;
     float *scale_v_wheel = (float *)&conf->scale_v_wheel_int32;
-    data->scale_x=*scale_x;
-    data->scale_y=*scale_y;
-    data->scale_h_wheel=*scale_h_wheel;
-    data->scale_v_wheel=*scale_v_wheel;
+    data->scale[MOUSE_CODE_TO_IDX(MOUSE_X_LEFT)] = *scale_x;
+    data->scale[MOUSE_CODE_TO_IDX(MOUSE_Y_UP)] = *scale_y;
+    data->scale[MOUSE_CODE_TO_IDX(MOUSE_H_WHEEL_LEFT)] = *scale_h_wheel;
+    data->scale[MOUSE_CODE_TO_IDX(MOUSE_V_WHEEL_UP)] = *scale_v_wheel;
     data->accumulation_start=0;
-    data->accumulator_x=0.0;
-    data->acceleration_start_x=0;
-    data->accumulator_y=0.0;
-    data->acceleration_start_y=0;
-    data->accumulator_h_wheel=0.0;
-    data->acceleration_start_h_wheel=0;
-    data->accumulator_v_wheel=0.0;
-    data->acceleration_start_v_wheel=0;
+    for(int i=0; i<MOUSE_CODE_TO_IDX(MOUSE_CODE_COUNT); i++){
+        data->accumulator[i]=0.0;
+        data->acceleration_start[i]=0;
+    }
     for(int i=0; i<MOUSE_CODE_COUNT; i++){
         data->last_values[i]=10000;
     }

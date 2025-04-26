@@ -45,7 +45,7 @@ struct rt_data {
 
 int rt_trigger_key(const struct device *dev, struct input_event *event, struct zmk_input_processor_state *state, bool pressed) {
     const struct rt_config *conf = dev->config;
-    const struct rt_data *data = dev->data;
+    // const struct rt_data *data = dev->data;
     if(conf->kscan_passthrough){
         return kscan_forwarder_forward(conf->kscan_forwarder,
             INV_INPUT_HE_ROW(event->code), INV_INPUT_HE_COL(event->code),
@@ -73,6 +73,7 @@ int rt_trigger_key(const struct device *dev, struct input_event *event, struct z
             }
         }
     }
+    return 0;
 }
 
 int rt_set_key_state(const struct device *dev, struct input_event *event, struct zmk_input_processor_state *state, uint32_t key_idx, bool pressed){
@@ -93,11 +94,9 @@ static int rt_handle_event(const struct device *dev,
                                 struct zmk_input_processor_state *state) {
     const struct rt_config *conf = dev->config;
     struct rt_data *data = dev->data;
-    bool processed = false;
     if (event->type != INPUT_EV_HE)
         return ZMK_INPUT_PROC_CONTINUE;
     int trigger_offset=conf->sensitivity/2;
-    bool enabled;
     struct key_state *key_state = &data->key_states[key_idx];
     if(key_state->enabled){    
         if(event->value > conf->actuation_point+trigger_offset){ // disable and release key

@@ -1,1 +1,56 @@
- 
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Input processor for mapping an hall effect input to a mouse input
+
+compatible: "he,input-processor-gamepad-forwarder"
+
+include: ip_one_param.yaml
+
+
+#TODO add custom curve mapping
+properties:
+  accumulation-time:
+    description: The time in milliseconds to accumulate the xy inputs, a sync event will be sent when the time is up
+    type: int
+    default: 2
+  time-to-max-speed-ms:
+    description: The time in milliseconds to reach the max speed, it's an array with 1 to 4 values, 1 value= everytihng, 2 values= joystick and triggers, 4 values= joystick left, trigger left, joystick right, trigger right
+    type: array
+    required: true
+  acceleration-exponent:
+    type: int
+    default: 1
+  normalize-circle:
+    description: Normalize the input to a circle instead of a square
+    type: boolean
+  working-area:
+    description: The working area the input, if the signal is outside of this bound, it will not be propagated
+    type: array
+    default: 
+      - 300
+      - 2800
+  scale-x-l-float:
+    description: Scale the x axis of the left joystick
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-y-l-float:
+    description: Scale the y axis of the left joystick
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-t-l-float:
+    description: Scale the left trigger input
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-x-r-float:
+    description: Scale the x axis of the right joystick
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-y-r-float:
+    description: Scale the y axis of the right joystick
+    type: int
+    default: 0x40a00000 # 5.0
+  scale-t-r-float:
+    description: Scale the right trigger input
+    type: int
+    default: 0x40a00000 # 5.0

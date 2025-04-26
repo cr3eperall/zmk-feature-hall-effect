@@ -56,7 +56,7 @@ struct adj_act_data {
 
 int adj_act_trigger_key(const struct device *dev, struct input_event *event, struct zmk_input_processor_state *state, int pos_idx, bool pressed) {
     const struct adj_act_config *conf = dev->config;
-    const struct adj_act_data *data = dev->data;
+    // const struct adj_act_data *data = dev->data;
     if(conf->kscan_passthrough){
         return kscan_forwarder_forward(conf->kscan_forwarder,
             INV_INPUT_HE_ROW(event->code), INV_INPUT_HE_COL(event->code),
@@ -84,6 +84,7 @@ int adj_act_trigger_key(const struct device *dev, struct input_event *event, str
             }
         }
     }
+    return 0;
 }
 
 int adj_act_set_key_state(const struct device *dev, struct input_event *event, struct zmk_input_processor_state *state, int pos_idx, uint32_t key_idx, bool pressed){

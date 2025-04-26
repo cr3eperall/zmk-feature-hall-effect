@@ -86,6 +86,7 @@ int socd_trigger_key(const struct device *dev,
             }
         }
     }
+    return 0;
 }
 
 int socd_set_key_state(const struct device *dev, struct input_event *event,
@@ -111,7 +112,6 @@ static int socd_handle_event(const struct device *dev,
                              struct zmk_input_processor_state *state) {
     const struct socd_config *conf = dev->config;
     struct socd_data *data = dev->data;
-    bool processed = false;
     if (event->type != INPUT_EV_HE)
         return ZMK_INPUT_PROC_CONTINUE;
     int trigger_offset = conf->sensitivity / 2;
@@ -204,7 +204,7 @@ static int socd_handle_event(const struct device *dev,
 
 static int socd_init(const struct device *dev) {
     struct socd_data *data = dev->data;
-    const struct socd_config *conf = dev->config;
+    // const struct socd_config *conf = dev->config;
     data->dev = dev;
     data->key_states = malloc(sizeof(struct key_state) * 2);
     for (int i = 0; i < 2; i++) {

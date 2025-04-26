@@ -29,7 +29,7 @@ struct kscan_he_data {
 };
 
 struct kscan_he_key_cfg {
-    struct adc_dt_spec adc;
+    const struct adc_dt_spec adc;
     // int16_t press_point;
     // int16_t release_point;
     int16_t deadzone_top;
@@ -43,7 +43,7 @@ struct kscan_he_group_cfg {
     bool switch_pressed_is_higher;
     int16_t switch_height;
     int16_t key_count;
-    struct kscan_he_key_cfg *keys;
+    const struct kscan_he_key_cfg *keys;
 };
 
 struct kscan_he_config {
@@ -53,7 +53,7 @@ struct kscan_he_config {
     int16_t wait_period_idle;
     int16_t wait_period_press;
     int16_t group_count;
-    struct kscan_he_group_cfg *he_groups;
+    const struct kscan_he_group_cfg *he_groups;
     const struct device *kscan_forwarder;
     bool calibrate;
     int16_t n_coeffs;

@@ -286,17 +286,17 @@ static void kscan_adc_calibrate_work_handler(struct k_work *work) {
     k_work_reschedule(&data->adc_read_work, K_TIMEOUT_ABS_MS(CONFIG_HE_ADC_CALIBRATION_DELAY));
 }
 
-static int kscan_he_pulse_set(const struct device *dev, bool pulse_enable){
-    const struct kscan_he_config *conf = dev->config;
+static void kscan_he_pulse_set(const struct device *dev, bool pulse_enable){
+    // const struct kscan_he_config *conf = dev->config;
     struct kscan_he_data *data = dev->data;
     if(data->pulse_enabled==pulse_enable){
-        return 0;
+        return;
     }
     data->pulse_enabled=pulse_enable;
     if(pulse_enable){
-        return set_all_gpio(dev, 0);
+        set_all_gpio(dev, 0);
     }else{
-        return set_all_gpio(dev, 1);
+        set_all_gpio(dev, 1);
     }
 }
 
@@ -408,7 +408,7 @@ static int kscan_he_configure(const struct device *dev,
 static int kscan_he_enable(const struct device *dev) {
     LOG_INF("kscan adc enabled");
     struct kscan_he_data *data = dev->data;
-    const struct kscan_he_config *conf = dev->config;
+    // const struct kscan_he_config *conf = dev->config;
     data->scan_time = k_uptime_get();
     if (!data->pulse_enabled) {
         set_all_gpio(dev, 1);
@@ -458,7 +458,7 @@ static const struct kscan_driver_api kscan_he_api = {
                          DT_IO_CHANNELS_INPUT(node_id))
 
 #define KSCAN_KEY_INIT(node_id)                                                \
-    (struct kscan_he_key_cfg) {                                                \
+    (const struct kscan_he_key_cfg) {                                                \
         .adc = ADC_DT_SPEC_GET_1(node_id),                                     \
         .deadzone_top = DT_PROP(node_id, deadzone_top),                         \
         .deadzone_bottom = DT_PROP(node_id, deadzone_bottom),                    \
@@ -467,7 +467,7 @@ static const struct kscan_driver_api kscan_he_api = {
     }
 
 #define KSCAN_GROUP_INIT(node_id, inst_id)                                     \
-    (struct kscan_he_group_cfg) {                                              \
+    (const struct kscan_he_group_cfg) {                                              \
         .enable_gpio = GPIO_DT_SPEC_GET_OR(                                    \
             node_id, enable_gpios, ({.port = NULL, .dt_flags = 0, .pin = 0})), \
         .switch_pressed_is_higher =                                            \

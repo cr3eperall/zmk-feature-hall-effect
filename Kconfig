@@ -1,10 +1,14 @@
-DT_COMPAT_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED := zmk,kscan-he-direct-pulsed
-DT_COMPAT_ZMK_DRIVER_KSCAN_FORWARDER := zmk,kscan-forwarder
+# DT_COMPAT_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED := zmk,kscan-he-direct-pulsed
+# DT_COMPAT_ZMK_DRIVER_KSCAN_FORWARDER := zmk,kscan-forwarder
 
-config CONFIG_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED))
+# config HE_DRIVER_KSCAN_HE_DIRECT_PULSED
+#     bool
+#     default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED))
 
-config CONFIG_ZMK_DRIVER_KSCAN_FORWARDER
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_FORWARDER))
+# config HE_DRIVER_KSCAN_FORWARDER
+#     bool
+#     default $(dt_compat_enabled,$(DT_COMPAT_ZMK_DRIVER_KSCAN_FORWARDER))
+
+config ZMK_BLE_GAMEPAD_REPORT_QUEUE_SIZE
+    int "Max number of mouse HID reports to queue for sending over BLE"
+    default 20
