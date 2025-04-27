@@ -1,7 +1,7 @@
 # Delete all unused properties.
 
 # Give your module a name
-name: zmk-driver-analog-kscan
+name: zmk-feature-hall-effect
 build:
   # List your dependencies
   # depends:

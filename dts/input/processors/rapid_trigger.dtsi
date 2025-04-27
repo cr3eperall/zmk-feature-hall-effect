@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    /omit-if-no-ref/ rt_pass: he-rapid-trigger{
+        compatible = "he,input-processor-rapid-trigger";
+        #input-processor-cells = <1>;
+        sensitivity =  <250>;
+        kscan-forwarder = <&kscan_forwarder>;
+        actuation-point = <2800>;
+        // keymap-size = <12>;
+        kscan-passthrough;
+    };
+};

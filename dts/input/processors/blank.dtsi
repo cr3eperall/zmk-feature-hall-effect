@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    /omit-if-no-ref/ he_trans: blank-he-transparent {
+        compatible = "he,input-processor-blank-he";
+        #input-processor-cells = <0>;
+        // log;
+    };
+    /omit-if-no-ref/ he_none: blank-he-block {
+        compatible = "he,input-processor-blank-he";
+        #input-processor-cells = <0>;
+        block;
+    };
+};

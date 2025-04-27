@@ -15,8 +15,7 @@
 #include <zmk/event_manager.h>
 #include <zmk/events/keycode_state_changed.h>
 
-LOG_MODULE_REGISTER(behavior_set_pulse,
-                    CONFIG_LOG_MAX_LEVEL); // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 

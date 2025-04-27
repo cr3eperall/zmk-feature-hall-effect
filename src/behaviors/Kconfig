@@ -1,0 +1,9 @@
+config HE_BEHAVIOR_GAMEPAD_BTN
+    bool "Enable gamepad button behavior"
+    default y
+    depends on DT_HAS_HE_BEHAVIOR_GAMEPAD_BTN_ENABLED
+
+config HE_BEHAVIOR_SET_PULSE
+    bool "Enable set pulse behavior"
+    default y
+    depends on DT_HAS_HE_BEHAVIOR_SET_PULSE_ENABLED

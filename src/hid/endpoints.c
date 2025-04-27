@@ -10,7 +10,7 @@
 #include <zmk/hog.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(endpoints_gamepad, CONFIG_LOG_MAX_LEVEL);  // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #include <he/hid/endpoints.h>
 #include <he/hid/hid.h>

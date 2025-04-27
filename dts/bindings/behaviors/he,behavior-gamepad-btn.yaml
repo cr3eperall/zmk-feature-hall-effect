@@ -3,6 +3,6 @@
 
 description: Send a gamepad button event
 
-compatible: "zmk,behavior-gamepad-btn"
+compatible: "he,behavior-gamepad-btn"
 
 include: one_param.yaml

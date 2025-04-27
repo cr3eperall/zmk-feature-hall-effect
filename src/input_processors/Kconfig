@@ -1,0 +1,46 @@
+config HE_INPUT_PROCESSOR_ADJUSTABLE_ACTUATION
+    bool "Enable adjustable actuation input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_ADJUSTABLE_ACTUATION_ENABLED
+
+config HE_INPUT_PROCESSOR_BLANK_HE
+    bool "Enable blank input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_BLANK_HE_ENABLED
+
+config HE_INPUT_PROCESSOR_GAMEPAD_FORWARDER
+    bool "Enable gamepad forwarder input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_GAMEPAD_FORWARDER_ENABLED
+    select HE_GAMEPAD_HID
+
+config HE_INPUT_PROCESSOR_KEYMAP
+    bool "Enable keymap input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_KEYMAP_ENABLED
+
+config HE_INPUT_PROCESSOR_MATRIX_OFFSET
+    bool "Enable matrix offset input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_MATRIX_OFFSET_ENABLED
+
+config HE_INPUT_PROCESSOR_MOUSE_FORWARDER
+    bool "Enable mouse forwarder input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_MOUSE_FORWARDER_ENABLED
+
+config HE_INPUT_PROCESSOR_RAPID_TRIGGER
+    bool "Enable rapid trigger input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_RAPID_TRIGGER_ENABLED
+
+config HE_INPUT_PROCESSOR_SOCD
+    bool "Enable SOCD input processor"
+    default y
+    depends on DT_HAS_HE_INPUT_PROCESSOR_SOCD_ENABLED
+
+config HE_RAW_SIGNAL_PROCESSOR
+    bool "Enable raw signal processor"
+    default y
+    depends on DT_HAS_HE_RAW_SIGNAL_PROCESSOR_ENABLED
+

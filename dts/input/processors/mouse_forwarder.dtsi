@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    /omit-if-no-ref/ mouse_fw: mouse-forwarder{
+        compatible = "he,input-processor-mouse-forwarder";
+        #input-processor-cells = <1>;
+        accumulation-time = <10>;
+        acceleration-exponent = <1>;
+        time-to-max-speed-ms = <300>;
+        working-area = <300 2800>;
+        scale-x-float = <0x40000000>;/* 2.0 */
+        scale-y-float = <0x40000000>;/* 2.0 */
+        scale-h-wheel-float = <0x40000000>;/* 2.0 */
+        scale-v-wheel-float = <0x40000000>;/* 2.0 */
+    };
+};

@@ -1,0 +1,22 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    /omit-if-no-ref/ gp_fw: gamepad-forwarder{
+        compatible = "he,input-processor-gamepad-forwarder";
+        #input-processor-cells = <1>;
+        accumulation-time = <10>;
+        acceleration-exponent = <1>;
+        time-to-max-speed-ms = <0>;
+        working-area = <300 2800>;
+        scale-x-l-float = <0x42fe0000>;/* 127.0 */
+        scale-y-l-float = <0x42fe0000>;/* 127.0 */
+        scale-t-l-float = <0x437f0000>;/* 255.0 */
+        scale-x-r-float = <0x42fe0000>;/* 127.0 */
+        scale-y-r-float = <0x42fe0000>;/* 127.0 */
+        scale-t-r-float = <0x437f0000>;/* 255.0 */
+    };
+};

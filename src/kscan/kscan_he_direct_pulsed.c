@@ -19,8 +19,7 @@
 #define CONFIG_HE_ADC_CALIBRATION_DELAY 2000000
 #endif
 
-LOG_MODULE_REGISTER(kscan_he_direct_pulsed,
-                    CONFIG_LOG_MAX_LEVEL); // TODO change name
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #define DT_DRV_COMPAT he_kscan_he_direct_pulsed
 

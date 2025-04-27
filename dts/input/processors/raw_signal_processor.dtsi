@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    /omit-if-no-ref/ raw_sp: raw-he-signal-processor{
+        compatible = "he,raw-signal-processor";
+        #input-processor-cells = <0>;
+        // matrix-size = <2 3>;
+        working-area = <250 3050>;
+        filter-coefficients = <0x3ca485df 0x3d2485df 0x3ca485df 0x3f800000 0xbfc7cf71 0x3f242f9d>;
+    };
+};

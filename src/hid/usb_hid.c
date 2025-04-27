@@ -20,7 +20,7 @@
 #include <he/hid/usb_hid.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(usb_hid_gamepad, CONFIG_LOG_MAX_LEVEL);  // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 static const struct device *hid_dev;
 

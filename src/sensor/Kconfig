@@ -1,0 +1,19 @@
+# Copyright (c) 2020-2021 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+config ZMK_BATTERY
+    bool "ZMK battery monitoring"
+    help
+        Enable battery monitoring
+
+config ZMK_BATTERY_NRF_VDDH_CHANNEL
+    bool
+    default y
+    select ADC
+    select ZMK_BATTERY
+    depends on SENSOR
+    depends on DT_HAS_ZMK_BATTERY_NRF_VDDH_CHANNEL_ENABLED
+    depends on !ZMK_BATTERY_NRF_VDDH
+    help
+        Enable ZMK nRF VDDH voltage driver for battery monitoring with selectable adc channel.
+

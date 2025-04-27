@@ -7,7 +7,7 @@
 #include "zmk/keys.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(hid_gamepad, CONFIG_LOG_MAX_LEVEL);  // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #include <zmk/hid.h>
 #include <dt-bindings/zmk/modifiers.h>

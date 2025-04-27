@@ -6,8 +6,7 @@
 
 #include <he/input-event-codes.h>
 
-LOG_MODULE_REGISTER(raw_signal_processor,
-                    CONFIG_LOG_MAX_LEVEL);  // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #define DT_DRV_COMPAT he_raw_signal_processor
 

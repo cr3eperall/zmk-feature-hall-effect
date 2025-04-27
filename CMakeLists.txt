@@ -1,10 +1,10 @@
 
-add_subdirectory_ifdef(CONFIG_SENSOR src/sensor/)
-add_subdirectory_ifdef(CONFIG_KSCAN src/kscan/)
-add_subdirectory_ifdef(CONFIG_INPUT src/input_processors/)
-add_subdirectory_ifdef(CONFIG_INPUT src/input/)
-add_subdirectory_ifdef(CONFIG_INPUT src/behaviors/)
-add_subdirectory_ifdef(CONFIG_INPUT src/hid/) # copied and modified from https://github.com/badjeff/zmk-hid-io
+add_subdirectory(src/sensor/)
+add_subdirectory(src/kscan/)
+add_subdirectory(src/input_processors/)
+add_subdirectory(src/input/)
+add_subdirectory(src/behaviors/)
+add_subdirectory(src/hid/) # copied and modified from https://github.com/badjeff/zmk-hid-io
 target_sources(app PRIVATE src/adc.c)
 
 zephyr_include_directories(include)

@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+/ {
+    /omit-if-no-ref/ kscan_forwarder: kscan-forwarder {
+        compatible = "he,kscan-he-direct-pulsed-forwarder";
+    };
+};
+
+#include <input/processors/adjustable_actuation.dtsi>
+#include <input/processors/blank.dtsi>
+#include <input/processors/gamepad_forwarder.dtsi>
+#include <input/processors/matrix_offset.dtsi>
+#include <input/processors/mouse_forwarder.dtsi>
+#include <input/processors/rapid_trigger.dtsi>
+#include <input/processors/raw_signal_processor.dtsi>

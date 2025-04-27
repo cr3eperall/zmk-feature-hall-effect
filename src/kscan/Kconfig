@@ -1,0 +1,11 @@
+config HE_KSCAN_FORWARDER
+    bool "Enable HE KSCAN forwarder"
+    default y
+    depends on DT_HAS_HE_KSCAN_HE_DIRECT_PULSED_FORWARDER_ENABLED
+
+config HE_KSCAN_HE_DIRECT_PULSED
+    bool "Enable HE KSCAN direct pulsed"
+    default y
+    depends on DT_HAS_HE_KSCAN_HE_DIRECT_PULSED_ENABLED
+    select ADC
+    select KSCAN

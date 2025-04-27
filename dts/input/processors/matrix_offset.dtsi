@@ -1,0 +1,12 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    /omit-if-no-ref/ he_mat_offset: he_matrix_offset{
+        compatible = "he,input-processor-matrix-offset";
+        #input-processor-cells = <2>;
+    };
+};

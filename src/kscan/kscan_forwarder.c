@@ -3,8 +3,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/device.h>
 
-LOG_MODULE_REGISTER(kscan_forwarder, CONFIG_LOG_MAX_LEVEL); // TODO change log level
-
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 #define DT_DRV_COMPAT he_kscan_he_direct_pulsed_forwarder
 
 struct kscan_forwarder_data {

@@ -1,0 +1,16 @@
+config HE_GAMEPAD_HID
+    bool "Enable gamepad HID report"
+    default n
+
+config HE_GAMEPAD_HID_SWAP_TRIGGER_R_AXIS
+    bool "Swap trigger and Right axis"
+    default n
+    depends on HE_GAMEPAD_HID
+
+if HE_GAMEPAD_HID
+
+
+config USB_HID_DEVICE_COUNT
+    default 2
+
+endif

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#define DT_DRV_COMPAT zmk_behavior_gamepad_btn
+#define DT_DRV_COMPAT he_behavior_gamepad_btn
 
 #include <drivers/behavior.h>
 #include <drivers/kscan_forwarder.h>
@@ -18,8 +18,7 @@
 #include <he/hid/hid_gamepad.h>
 #include <dt-bindings/he/gamepad_forwarder.h>
 
-LOG_MODULE_REGISTER(behavior_gamepad_btn,
-                    CONFIG_LOG_MAX_LEVEL); // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 

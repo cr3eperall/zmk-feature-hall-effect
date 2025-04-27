@@ -17,7 +17,7 @@
 
 #include "battery_common.h"
 
-LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_ZMK_LOG_LEVEL);
 
 #define VDDHDIV (5)
 

@@ -12,8 +12,7 @@
 #include <he/input-event-codes.h>
 #include <he/socd.h>
 
-LOG_MODULE_REGISTER(input_processor_socd,
-                    CONFIG_LOG_MAX_LEVEL); // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #define DT_DRV_COMPAT he_input_processor_socd
 

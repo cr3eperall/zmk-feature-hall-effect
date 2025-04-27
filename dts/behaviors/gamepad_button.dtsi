@@ -1,0 +1,12 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+ / {
+    /omit-if-no-ref/ gp_btn: behavior_gamepad_btn{
+        compatible = "he,behavior-gamepad-btn";
+        #binding-cells = <1>;
+    };
+};

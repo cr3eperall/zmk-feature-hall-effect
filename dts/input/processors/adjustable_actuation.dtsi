@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) 2025 cr3eperall
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    /omit-if-no-ref/ he_pass: he_adjustable_actuation {
+        compatible = "he,input-processor-adjustable-actuation";
+        #input-processor-cells = <1>;
+        sensitivity = <250>;
+        kscan-forwarder = <&kscan_forwarder>;
+        kscan-passthrough-position = <2800>;
+        // keymap-size = <12>;
+        kscan-passthrough;
+    };
+};

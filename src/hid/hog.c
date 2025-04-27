@@ -18,7 +18,7 @@
 #include <zmk/hid.h>
 
 #include <he/hid/hid.h>
-LOG_MODULE_REGISTER(hog_gamepad, CONFIG_LOG_MAX_LEVEL);  // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 enum {
     HIDS_REMOTE_WAKE = BIT(0),

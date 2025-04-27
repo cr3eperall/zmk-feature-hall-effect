@@ -18,7 +18,7 @@
 #include <zephyr/input/input.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(he_input_listener, CONFIG_LOG_MAX_LEVEL);  // TODO change log level
+LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 

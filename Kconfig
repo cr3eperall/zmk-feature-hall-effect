@@ -12,3 +12,19 @@
 config ZMK_BLE_GAMEPAD_REPORT_QUEUE_SIZE
     int "Max number of mouse HID reports to queue for sending over BLE"
     default 20
+
+config HE_LOG_LEVEL
+    int "Log level for HE driver"
+    default ZMK_LOG_LEVEL
+
+config HE_INPUT_LISTENER
+    bool "Enable modified input listener"
+    default y
+    depends on DT_HAS_HE_INPUT_LISTENER_ENABLED
+    select ZMK_POINTING
+
+rsource "src/behaviors/Kconfig"
+rsource "src/input_processors/Kconfig"
+rsource "src/kscan/Kconfig"
+rsource "src/sensor/Kconfig"
+rsource "src/hid/Kconfig"

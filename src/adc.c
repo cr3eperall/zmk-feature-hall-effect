@@ -1,6 +1,7 @@
 #include "adc.h"
 #include <math.h>
 #include <stdlib.h>
+#include <zephyr/logging/log.h>
 
 // static int compare_key_channel(const void *a, const void *b) {
 //     const struct kscan_he_key_cfg *adc_a = a;
@@ -13,6 +14,9 @@
 //     qsort(group_cfg->keys, group_cfg->key_count,
 //           sizeof(struct kscan_he_key_cfg), compare_key_channel);
 // }
+
+LOG_MODULE_REGISTER(feature_hall_effect,
+    CONFIG_HE_LOG_LEVEL);
 
 int16_t kscan_adc_cfg_deadzone_top(const struct device *dev, uint8_t group,
                                    uint8_t key) {
