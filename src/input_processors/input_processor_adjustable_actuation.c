@@ -67,6 +67,7 @@ int adj_act_trigger_key(const struct device *dev, struct input_event *event, str
                     ZMK_VIRTUAL_KEY_POSITION_BEHAVIOR_INPUT_PROCESSOR(
                         state->input_device_index, conf->index), // I could use the real position of the key but it would require a pointer to the transform matrix
                 .timestamp = k_uptime_get(),
+                //TODO: find where the event was generated and set the source 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT)
                 .source = ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL,
 #endif

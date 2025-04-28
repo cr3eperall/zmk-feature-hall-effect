@@ -51,7 +51,7 @@ int zmk_input_split_report_peripheral_event(uint8_t reg, uint8_t type,
 #include <zmk/split/peripheral.h>
 
 #define ZIS_INST(n)                                                            \
-    static const struct zmk_input_processor_entry processors_##n[] =           \
+    static const struct zmk_input_processor_entry he_processors_##n[] =           \
         COND_CODE_1(DT_INST_NODE_HAS_PROP(n, input_processors),                \
                     ({LISTIFY(DT_INST_PROP_LEN(n, input_processors),           \
                               ZMK_INPUT_PROCESSOR_ENTRY_AT_IDX, (, ),          \
@@ -59,14 +59,14 @@ int zmk_input_split_report_peripheral_event(uint8_t reg, uint8_t type,
                     ({}));                                                     \
     BUILD_ASSERT(DT_INST_NODE_HAS_PROP(n, device),                             \
                  "Peripheral input splits need a `device` property set");      \
-    void split_input_handler_##n(struct input_event *evt) {                    \
-        for (size_t i = 0; i < ARRAY_SIZE(processors_##n); i++) {              \
+    void he_split_input_handler_##n(struct input_event *evt) {                    \
+        for (size_t i = 0; i < ARRAY_SIZE(he_processors_##n); i++) {              \
             int ret = zmk_input_processor_handle_event(                        \
-                processors_##n[i].dev, evt, processors_##n[i].param1,          \
-                processors_##n[i].param2, NULL);                               \
+                he_processors_##n[i].dev, evt, he_processors_##n[i].param1,          \
+                he_processors_##n[i].param2, NULL);                               \
             if (ret < 0) {                                                     \
                 LOG_ERR("Error %d from input processor %s", ret,               \
-                        processors_##n[i].dev->name);                          \
+                    he_processors_##n[i].dev->name);                          \
                 return;                                                        \
             } else if (ret == ZMK_INPUT_PROC_STOP) {                           \
                 return;                                                        \
@@ -88,7 +88,7 @@ int zmk_input_split_report_peripheral_event(uint8_t reg, uint8_t type,
         }                                                                      \
     }                                                                          \
     INPUT_CALLBACK_DEFINE(DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),           \
-                          split_input_handler_##n);
+                          he_split_input_handler_##n);
 
 #endif
 
