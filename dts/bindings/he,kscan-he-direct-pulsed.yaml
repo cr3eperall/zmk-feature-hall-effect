@@ -49,7 +49,7 @@ child-binding:
   properties:
     enable-gpios:
       type: phandle-array
-    switch-pressed-is-higher: #TODO change to lower if needed
+    switch-pressed-is-higher:
       type: boolean
     switch-height:
       description: Height of the switch in micrometers

@@ -23,7 +23,7 @@
 #include <dt-bindings/zmk/hid_usage_pages.h>
 
 // See https://www.usb.org/sites/default/files/hid1_11.pdf section 6.2.2.4 Main Items
-//TODO add hat switch and other buttons(start,select, etc.)
+//TODO add hat switch and more buttons(start,select, etc.)
 static const uint8_t zmk_hid_gamepad_report_desc[] = {
     HID_USAGE_PAGE(HID_USAGE_GD),
     HID_USAGE(HID_USAGE_GD_GAMEPAD),

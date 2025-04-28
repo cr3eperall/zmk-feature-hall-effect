@@ -48,7 +48,6 @@ struct socd_data {
     // bool enabled;
 };
 
-
 int socd_trigger_key(const struct device *dev,
                      struct zmk_input_processor_state *state, bool pressed,
                      uint32_t key_idx) {
@@ -93,9 +92,10 @@ int socd_set_key_state(const struct device *dev, struct input_event *event,
                        uint32_t key_idx, bool new_state) {
     struct socd_data *data = dev->data;
     struct key_state *key_state = &data->key_states[key_idx];
-    if(key_state->row==INV_INPUT_HE_ROW(event->code) && key_state->col==INV_INPUT_HE_COL(event->code)){
+    if (key_state->row == INV_INPUT_HE_ROW(event->code) &&
+        key_state->col == INV_INPUT_HE_COL(event->code)) {
         key_state->last_value = event->value;
-    } 
+    }
     if (key_state->last_state == new_state || key_state->col == -1 ||
         key_state->row == -1) {
         return 0;
@@ -114,22 +114,24 @@ static int socd_handle_event(const struct device *dev,
     if (event->type != INPUT_EV_HE)
         return ZMK_INPUT_PROC_CONTINUE;
     int trigger_offset = conf->sensitivity / 2;
-    int other_key_idx=1-key_idx;
+    int other_key_idx = 1 - key_idx;
     struct key_state *key_state = &data->key_states[key_idx];
     struct key_state *other_key_state = &data->key_states[other_key_idx];
-    int row=INV_INPUT_HE_ROW(event->code);
-    int col=INV_INPUT_HE_COL(event->code);
+    int row = INV_INPUT_HE_ROW(event->code);
+    int col = INV_INPUT_HE_COL(event->code);
     if (key_state->col == -1 || key_state->row == -1) {
         key_state->row = row;
         key_state->col = col;
-    } else if(key_state->col!=col || key_state->row != row){
-        LOG_WRN("This slot(%d) is already bound to key (%d,%d)", key_idx, row, col);
+    } else if (key_state->col != col || key_state->row != row) {
+        LOG_WRN("This slot(%d) is already bound to key (%d,%d)", key_idx, row,
+                col);
     }
-    if(key_state->enabled){    
-        if(event->value > conf->actuation_point+trigger_offset){ // disable and release key
+    if (key_state->enabled) {
+        if (event->value >
+            conf->actuation_point + trigger_offset) { // disable and release key
             int ret = socd_set_key_state(dev, event, state, key_idx, false);
             key_state->enabled = false;
-            if(other_key_state->enabled){
+            if (other_key_state->enabled) {
                 socd_set_key_state(dev, event, state, other_key_idx, true);
                 other_key_state->enable_time = k_uptime_get();
             }
@@ -137,65 +139,78 @@ static int socd_handle_event(const struct device *dev,
                 return ret;
             }
         }
-    }else if( event->value < conf->actuation_point-trigger_offset){ //enable
+    } else if (event->value < conf->actuation_point - trigger_offset) { // enable
         key_state->enabled = true;
         key_state->enable_time = k_uptime_get();
     }
-    if(!key_state->enabled){
+    if (!key_state->enabled) {
         return ZMK_INPUT_PROC_STOP;
     }
-    switch(conf->type){
-        case SOCD_PRIORITY_0:
-            if(key_idx==0){
-                socd_set_key_state(dev, event, state, key_idx, true);
-                socd_set_key_state(dev, event, state, other_key_idx, false);
-            } else if(!other_key_state->enabled){
-                socd_set_key_state(dev, event, state, key_idx, true);
-            }
-            break;
-        case SOCD_PRIORITY_1:
-            if(key_idx==1){
-                socd_set_key_state(dev, event, state, key_idx, true);
-                socd_set_key_state(dev, event, state, other_key_idx, false);
-            } else if(!other_key_state->enabled){
-                socd_set_key_state(dev, event, state, key_idx, true);
-            }
-            break;
-        case SOCD_PRIORITY_FIRST:
-            if(!other_key_state->enabled || other_key_state->enable_time > key_state->enable_time){
-                socd_set_key_state(dev, event, state, key_idx, true);
-                socd_set_key_state(dev, event, state, other_key_idx, false);
-            }
-            break;
-        case SOCD_PRIORITY_LAST:
-            if(!other_key_state->enabled || other_key_state->enable_time < key_state->enable_time){
-                socd_set_key_state(dev, event, state, key_idx, true);
-                socd_set_key_state(dev, event, state, other_key_idx, false);
-            }
-            break;
-        case SOCD_PRIORITY_DEEPER:
-            trigger_offset = MAX(trigger_offset, conf->equal_sensitivity);
-            if(!other_key_state->enabled || other_key_state->last_value - event->value > trigger_offset){ // other deactivated or this pressed further
-                socd_set_key_state(dev, event, state, key_idx, true);
-                socd_set_key_state(dev, event, state, other_key_idx, false);
-                // LOG_DBG("other deactivated or this pressed further: %d %d %d",other_key_state->enabled, other_key_state->last_value, event->value);
-            }else if(event->value - other_key_state->last_value > trigger_offset){ // both activated and other pressed further
-                socd_set_key_state(dev, event, state, key_idx, false);
-                socd_set_key_state(dev, event, state, other_key_idx, true);
-            }else{  // both activated but pressed the same
-                socd_set_key_state(dev, event, state, key_idx, conf->equal_sensitivity !=0);
-                socd_set_key_state(dev, event, state, other_key_idx, conf->equal_sensitivity !=0);
-            }
-            break;
-        case SOCD_PRIORITY_DIRECTION:
-            if (!other_key_state->enabled || event->value < key_state->last_value - trigger_offset) { // this going down
-                socd_set_key_state(dev, event, state, key_idx, true);
-                socd_set_key_state(dev, event, state, other_key_idx, false);
-            }else if(event->value > key_state->last_value + trigger_offset){ // other active and this going up
-                socd_set_key_state(dev, event, state, key_idx, false);
-                socd_set_key_state(dev, event, state, other_key_idx, true);
-            } // else: not enough changes, use the last state
-            break;
+    switch (conf->type) {
+    case SOCD_PRIORITY_0:
+        if (key_idx == 0) {
+            socd_set_key_state(dev, event, state, key_idx, true);
+            socd_set_key_state(dev, event, state, other_key_idx, false);
+        } else if (!other_key_state->enabled) {
+            socd_set_key_state(dev, event, state, key_idx, true);
+        }
+        break;
+    case SOCD_PRIORITY_1:
+        if (key_idx == 1) {
+            socd_set_key_state(dev, event, state, key_idx, true);
+            socd_set_key_state(dev, event, state, other_key_idx, false);
+        } else if (!other_key_state->enabled) {
+            socd_set_key_state(dev, event, state, key_idx, true);
+        }
+        break;
+    case SOCD_PRIORITY_FIRST:
+        if (!other_key_state->enabled ||
+            other_key_state->enable_time > key_state->enable_time) {
+            socd_set_key_state(dev, event, state, key_idx, true);
+            socd_set_key_state(dev, event, state, other_key_idx, false);
+        }
+        break;
+    case SOCD_PRIORITY_LAST:
+        if (!other_key_state->enabled ||
+            other_key_state->enable_time < key_state->enable_time) {
+            socd_set_key_state(dev, event, state, key_idx, true);
+            socd_set_key_state(dev, event, state, other_key_idx, false);
+        }
+        break;
+    case SOCD_PRIORITY_DEEPER:
+        trigger_offset = MAX(trigger_offset, conf->equal_sensitivity);
+        if (!other_key_state->enabled ||
+            other_key_state->last_value - event->value >
+                trigger_offset) { // other deactivated or this pressed further
+            socd_set_key_state(dev, event, state, key_idx, true);
+            socd_set_key_state(dev, event, state, other_key_idx, false);
+            // LOG_DBG("other deactivated or this pressed further: %d %d
+            // %d",other_key_state->enabled, other_key_state->last_value,
+            // event->value);
+        } else if (event->value - other_key_state->last_value >
+                   trigger_offset) { // both activated and other pressed further
+            socd_set_key_state(dev, event, state, key_idx, false);
+            socd_set_key_state(dev, event, state, other_key_idx, true);
+        } else { // both activated but pressed the same
+            socd_set_key_state(dev, event, state, key_idx,
+                               conf->equal_sensitivity != 0);
+            socd_set_key_state(dev, event, state, other_key_idx,
+                               conf->equal_sensitivity != 0);
+        }
+        break;
+    case SOCD_PRIORITY_DIRECTION:
+        if (!other_key_state->enabled ||
+            event->value <
+                key_state->last_value - trigger_offset) { // this going down
+            socd_set_key_state(dev, event, state, key_idx, true);
+            socd_set_key_state(dev, event, state, other_key_idx, false);
+        } else if (event->value >
+                   key_state->last_value +
+                       trigger_offset) { // other active and this going up
+            socd_set_key_state(dev, event, state, key_idx, false);
+            socd_set_key_state(dev, event, state, other_key_idx, true);
+        } // else: not enough changes, use the last state
+        break;
     }
 
     return ZMK_INPUT_PROC_STOP;
@@ -213,7 +228,7 @@ static int socd_init(const struct device *dev) {
         data->key_states[i].row = -1;
         data->key_states[i].col = -1;
         data->key_states[i].enabled = false;
-        data->key_states[i].enable_time=0;
+        data->key_states[i].enable_time = 0;
     }
     // data->enabled = false;
     return 0;
@@ -224,6 +239,9 @@ static struct zmk_input_processor_driver_api processor_api = {
 };
 
 #define SOCD_INIT(n)                                                           \
+    BUILD_ASSERT(!DT_INST_PROP(n, kscan_passthrough) ||                        \
+                     DT_INST_NODE_HAS_PROP(n, kscan_forwarder),                \
+                 "kscan_passthrough requires kscan_forwarder");                \
     static const struct zmk_behavior_binding socd_behaviors_bindings_##n[] =   \
         COND_CODE_1(                                                           \
             DT_INST_NODE_HAS_PROP(n, bindings),                                \
@@ -239,8 +257,8 @@ static struct zmk_input_processor_driver_api processor_api = {
         .actuation_point = DT_INST_PROP(n, actuation_point),                   \
         .bindings_len = DT_INST_PROP_LEN_OR(n, bindings, 0),                   \
         .bindings = socd_behaviors_bindings_##n,                               \
-        .first_key_behavior_n = DT_INST_PROP_OR(n, first_key_behavior_n, 0),         \
-        .type = DT_INST_ENUM_IDX(n, type),                                          \
+        .first_key_behavior_n = DT_INST_PROP_OR(n, first_key_behavior_n, 0),   \
+        .type = DT_INST_ENUM_IDX(n, type),                                     \
     };                                                                         \
     static struct socd_data socd_data_##n;                                     \
     DEVICE_DT_INST_DEFINE(n, &socd_init, NULL, &socd_data_##n,                 \

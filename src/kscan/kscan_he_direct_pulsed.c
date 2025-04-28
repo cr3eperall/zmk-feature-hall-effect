@@ -303,10 +303,6 @@ static void kscan_he_pulse_set(const struct device *dev, bool pulse_enable){
 static int kscan_he_init(const struct device *dev) {
     struct kscan_he_data *data = dev->data;
     const struct kscan_he_config *conf = dev->config;
-    // TODO this shouldn't modify the config struct, it would be better to copy
-    // input_adcs to data and modify that (it wouldn't really change anything
-    // but it would look better)
-    // kscan_adc_list_sort_by_channel(&conf->input_adcs);
     if(conf->calibrate){
         LOG_WRN("Calibration enabled, input will be sent to serial and will not generate input events");
     }
@@ -320,7 +316,6 @@ static int kscan_he_init(const struct device *dev) {
                 conf->he_groups[i].keys[channel_ord].adc.channel_id;
             data->adc_groups[i].key_channels[channel_id] = channel_ord;
         }
-        // kscan_adc_sort_keys_by_channel(&conf->he_groups[i]); //FIXME conf is const so it shouldn't be modified
         data->adc_groups[i].as = (struct adc_sequence){
             .buffer = data->adc_groups[i].adc_buffer,
             .buffer_size = sizeof(int16_t) * (conf->he_groups[i].key_count),
@@ -331,7 +326,7 @@ static int kscan_he_init(const struct device *dev) {
             .resolution = conf->resolution};
     }
     data->polyfit = malloc(conf->n_coeffs * sizeof(float));
-    for (int i = 0; i < conf->n_coeffs; i++) {
+    for (int i = 0; i < conf->n_coeffs; i++) { //TODO could use a lookup table to save some processing time
         int32_t coeff_i = conf->polyfit_int32[i];
         float *coeff_f = (float *)&coeff_i;
         data->polyfit[i] = *coeff_f;

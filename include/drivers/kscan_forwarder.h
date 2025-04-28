@@ -35,7 +35,6 @@ __subsystem struct kscan_forwarder_api {
     kscan_forwarder_config_pulse_set_t config_pulse_set;
     kscan_forwarder_forward_t forward;
     kscan_forwarder_pulse_set_t pulse_set;
-    //TODO add enable/disable pulse 
 };
 /**
  * @endcond

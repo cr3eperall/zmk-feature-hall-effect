@@ -10,11 +10,12 @@ This module is a collection of drivers, behaviors and input-processors to suppor
 ## Drivers
   - `he,kscan-he-direct-pulsed`: Each HE sensor is wired directly to an adc channel, supports the use of an enable pin to power the sensor only when it needs to be read. <br/>
     Generates input events with type `INPUT_EV_HE` but can also generate kscan events with `he,kscan-he-direct-pulsed-forwarder`(this allows the input processors to use the normal keymap)
-> This was implemented to work with my custom HE keyboard, if need another driver(e.g. using analog multiplexers), you can create an issue(but i have no way to test other drivers)
+> This was implemented to work with my custom HE keyboard, if you need another driver(e.g. using analog multiplexers), you can create an issue (note that i have no way to test other drivers)
 
   - `zmk,battery-nrf-vddh-channel`: Has the same functionality as `zmk,battery-nrf-vddh` but you can select which adc channel gets used
 > [!NOTE]
 > Currently if you enable both drivers using non-overlapping channels (which is necessary to enable both), everything stops working.
+> So this driver is pretty much useless for now
 > This also happens with `zmk,battery-nrf-vddh`
 
 ## Input Processors
