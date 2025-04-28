@@ -1,0 +1,18 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+include: [base.yaml]
+
+compatible: "he,input-split"
+
+description: Device to wire up an input device for split use, doesn't send inputs if an input processor returns ZMK_INPUT_PROC_STOP.
+
+properties:
+  reg:
+    required: true
+
+  device:
+    type: phandle
+
+  input-processors:
+    type: phandle-array

@@ -23,6 +23,14 @@ config HE_INPUT_LISTENER
     depends on DT_HAS_HE_INPUT_LISTENER_ENABLED
     select ZMK_POINTING
 
+config HE_INPUT_SPLIT
+    bool "Enable modified input split"
+    default y
+    depends on DT_HAS_HE_INPUT_SPLIT_ENABLED
+    depends on ZMK_SPLIT
+    depends on !ZMK_SPLIT_ROLE_CENTRAL
+    select ZMK_POINTING
+
 rsource "src/behaviors/Kconfig"
 rsource "src/input_processors/Kconfig"
 rsource "src/kscan/Kconfig"

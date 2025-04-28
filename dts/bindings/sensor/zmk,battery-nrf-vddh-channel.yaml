@@ -6,7 +6,7 @@ description: Battery SoC monitoring using nRF VDDH
 compatible: "zmk,battery-nrf-vddh-channel"
 
 properties:
-  vddh-channel:
-    description: The ADC channel to use for VDDH
-    type: int
-    default: 0
+  io-channels:
+    description: ADC channel the battery measurement
+    type: phandle-array
+    required: true
