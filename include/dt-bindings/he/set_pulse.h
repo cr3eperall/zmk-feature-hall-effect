@@ -1,0 +1,5 @@
+#define PULSE_SET_OFF 0
+#define PULSE_SET_ON 1
+#define PULSE_SET_TOGGLE 2
+#define PULSE_TEMP_ON 3
+#define PULSE_TEMP_OFF 4

@@ -55,10 +55,10 @@ on_set_pulse_binding_pressed(struct zmk_behavior_binding *binding,
     const struct device *dev = zmk_behavior_get_binding(binding->behavior_dev);
     const struct set_pulse_config *config = dev->config;
     struct set_pulse_data *data = dev->data;
-    if (binding->param1 == 0) {
+    if (binding->param1 == 0 || binding->param1 == 3) {
         data->pulse_enabled = false;
         return kscan_forwarder_pulse_set(config->kscan_forwarder, false);
-    } else if (binding->param1 == 1) {
+    } else if (binding->param1 == 1 || binding->param1 == 4) {
         data->pulse_enabled = true;
         return kscan_forwarder_pulse_set(config->kscan_forwarder, true);
     } else if (binding->param1 == 2) {
@@ -77,7 +77,23 @@ on_set_pulse_binding_pressed(struct zmk_behavior_binding *binding,
 static int
 on_set_pulse_binding_released(struct zmk_behavior_binding *binding,
                               struct zmk_behavior_binding_event event) {
-
+    const struct device *dev = zmk_behavior_get_binding(binding->behavior_dev);
+    const struct set_pulse_config *config = dev->config;
+    struct set_pulse_data *data = dev->data;
+    if(binding->param1==3){
+        data->pulse_enabled = true;
+        return kscan_forwarder_pulse_set(config->kscan_forwarder, true);
+    }else if(binding->param1==4){
+        data->pulse_enabled = false;
+        return kscan_forwarder_pulse_set(config->kscan_forwarder, false);
+    }else{
+        return ZMK_BEHAVIOR_OPAQUE;
+    }
+    if (data->pulse_enabled) {
+        LOG_DBG("Pulse enabled");
+    } else {
+        LOG_DBG("Pulse disabled");
+    }
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
