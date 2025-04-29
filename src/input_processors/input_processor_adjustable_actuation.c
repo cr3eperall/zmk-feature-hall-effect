@@ -170,6 +170,7 @@ static int adj_act_init(const struct device *dev) {
     const struct adj_act_config *conf = dev->config;
     data->dev = dev;
     data->key_states = malloc(sizeof(struct key_state) * conf->keymap_size);
+    //TODO sort the behaviors by actuation point
     for (int i = 0; i < conf->keymap_size; i++) {
         data->key_states[i].last_value =
             10000; // emulates the switch being at max height

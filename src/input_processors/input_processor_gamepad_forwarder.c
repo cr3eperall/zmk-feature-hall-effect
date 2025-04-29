@@ -41,6 +41,7 @@ struct gamepad_forwarder_config {
     int deadzone_bottom;
     int deadzone_top;
     int acceleration_exponent;
+    //FIXME: at the moment the acceleration is only applied when the values are sent
     int time_to_max_speed_tmp[4]; // joy left, trigger left, joy right, trigger
                                   // right
     int time_to_max_speed_len;

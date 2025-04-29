@@ -65,14 +65,14 @@ float acceleration_mult(const struct device *dev, int64_t start_time){
     return powf(time_fraction, conf->acceleration_exponent);
 }
 
-int accumulate(const struct device *dev, float value, int key_type){
+void accumulate(const struct device *dev, float value, int key_type){
     struct mouse_forwarder_data *data = dev->data;
+    int idx=MOUSE_CODE_TO_IDX(key_type);
     if(key_type%2==0){
-        data->accumulator[MOUSE_CODE_TO_IDX(key_type)]-=value;
+        data->accumulator[idx]-=value*acceleration_mult(dev, data->acceleration_start[idx]);
     }else{
-        data->accumulator[MOUSE_CODE_TO_IDX(key_type)]+=value;
+        data->accumulator[idx]+=value*acceleration_mult(dev, data->acceleration_start[idx]);
     }
-    return 0;
 }
 
 bool must_sync(const struct device *dev){
