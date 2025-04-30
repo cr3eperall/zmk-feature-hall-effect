@@ -7,6 +7,13 @@ config HE_GAMEPAD_HID_SWAP_TRIGGER_R_AXIS
     default n
     depends on HE_GAMEPAD_HID
 
+config HE_GAMEPAD_HID_NUM_BUTTONS
+    int "Number of buttons in the hid report"
+    default 8
+    range 1 32
+    depends on HE_GAMEPAD_HID
+
+
 if HE_GAMEPAD_HID
 
 

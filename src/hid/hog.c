@@ -49,7 +49,7 @@ enum {
 };
 
 static struct hids_report gamepad_input = {
-    .id = ZMK_HID_REPORT_ID_GAMEPAD,
+    .id = HE_GAMEPAD_HID_REPORT_ID,
     .type = HIDS_INPUT,
 };
 

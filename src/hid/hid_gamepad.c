@@ -17,23 +17,23 @@ LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 #include <he/hid/hid_gamepad.h>
 
 static struct zmk_hid_gamepad_report gamepad_report = {
-    .report_id = ZMK_HID_REPORT_ID_GAMEPAD,
+    .report_id = HE_GAMEPAD_HID_REPORT_ID,
     .body = { .d_x = 0, .d_y = 0, .d_z = 0,  .d_rx = 0, .d_ry = 0, .d_rz = 0,
               .buttons = 0 }};
 
 // Keep track of how often a button was pressed.
 // Only release the button if the count is 0.
-static int explicit_gamepad_btn_counts[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static zmk_mod_flags_t explicit_gamepad_btns = 0;
+static int explicit_gamepad_btn_counts[CONFIG_HE_GAMEPAD_HID_NUM_BUTTONS] = {0};
+static zmk_gamepad_button_flags_t explicit_gamepad_btns = {0};
 
 #define SET_GAMEPAD_BUTTONS(btns)                                                                 \
     {                                                                                              \
         gamepad_report.body.buttons = btns;                                                   \
-        LOG_DBG("GAMEPAD Buttons set to 0x%02X", gamepad_report.body.buttons);                        \
+        LOG_DBG("GAMEPAD Buttons set to 0x%08X", gamepad_report.body.buttons);                        \
     }
 
 int zmk_hid_gamepad_button_press(zmk_gamepad_button_t button) {
-    if (button >= ZMK_HID_GAMEPAD_NUM_BUTTONS) {
+    if (button >= CONFIG_HE_GAMEPAD_HID_NUM_BUTTONS) {
         return -EINVAL;
     }
 
@@ -45,7 +45,7 @@ int zmk_hid_gamepad_button_press(zmk_gamepad_button_t button) {
 }
 
 int zmk_hid_gamepad_button_release(zmk_gamepad_button_t button) {
-    if (button >= ZMK_HID_GAMEPAD_NUM_BUTTONS) {
+    if (button >= CONFIG_HE_GAMEPAD_HID_NUM_BUTTONS) {
         return -EINVAL;
     }
 
@@ -64,7 +64,7 @@ int zmk_hid_gamepad_button_release(zmk_gamepad_button_t button) {
 }
 
 int zmk_hid_gamepad_buttons_press(zmk_gamepad_button_flags_t buttons) {
-    for (zmk_gamepad_button_t i = 0; i < ZMK_HID_GAMEPAD_NUM_BUTTONS; i++) {
+    for (zmk_gamepad_button_t i = 0; i < CONFIG_HE_GAMEPAD_HID_NUM_BUTTONS; i++) {
         if (buttons & BIT(i)) {
             zmk_hid_gamepad_button_press(i);
         }
@@ -73,7 +73,7 @@ int zmk_hid_gamepad_buttons_press(zmk_gamepad_button_flags_t buttons) {
 }
 
 int zmk_hid_gamepad_buttons_release(zmk_gamepad_button_flags_t buttons) {
-    for (zmk_gamepad_button_t i = 0; i < ZMK_HID_GAMEPAD_NUM_BUTTONS; i++) {
+    for (zmk_gamepad_button_t i = 0; i < CONFIG_HE_GAMEPAD_HID_NUM_BUTTONS; i++) {
         if (buttons & BIT(i)) {
             zmk_hid_gamepad_button_release(i);
         }

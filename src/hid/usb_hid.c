@@ -50,7 +50,7 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
     }
 
     switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
-    case ZMK_HID_REPORT_ID_GAMEPAD: {
+    case HE_GAMEPAD_HID_REPORT_ID: {
         struct zmk_hid_gamepad_report *report = zmk_hid_get_gamepad_report();
         *data = (uint8_t *)report;
         *len = sizeof(*report);
