@@ -22,5 +22,3 @@
     (code >= GP_R_LEFT && (code <= GP_R_DOWN || code == GP_R_TR))
 #define GP_INVALID(code)                                                       \
     (code < 0 || code >= GP_CODE_COUNT || code == 8 || code == 10)
-
-#define GP_BTN_COUNT 8

@@ -361,23 +361,6 @@ static int kscan_he_init(const struct device *dev) {
     return 0;
 }
 
-#if IS_ENABLED(CONFIG_PM_DEVICE)
-
-// power management function
-static int kscan_he_pm_action(const struct device *dev,
-                              enum pm_device_action action) {
-    switch (action) {
-    case PM_DEVICE_ACTION_SUSPEND:
-        return kscan_he_disable(dev);
-    case PM_DEVICE_ACTION_RESUME:
-        kscan_adc_setup_pins(dev) return kscan_he_enable(dev);
-    default:
-        return -ENOTSUP;
-    }
-}
-
-#endif // IS_ENABLED(CONFIG_PM_DEVICE)
-
 // config function
 static int kscan_he_configure(const struct device *dev,
                               const kscan_callback_t callback) {
@@ -421,6 +404,24 @@ static int kscan_he_disable(const struct device *dev) {
     set_all_gpio(dev, 0);
     return 0;
 }
+
+#if IS_ENABLED(CONFIG_PM_DEVICE)
+
+// power management function
+static int kscan_he_pm_action(const struct device *dev,
+                              enum pm_device_action action) {
+    switch (action) {
+    case PM_DEVICE_ACTION_SUSPEND:
+        return kscan_he_disable(dev);
+    case PM_DEVICE_ACTION_RESUME:
+        setup_pins(dev);
+        return kscan_he_enable(dev);
+    default:
+        return -ENOTSUP;
+    }
+}
+
+#endif // IS_ENABLED(CONFIG_PM_DEVICE)
 
 // kscan api struct
 static const struct kscan_driver_api kscan_he_api = {

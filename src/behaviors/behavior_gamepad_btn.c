@@ -45,7 +45,7 @@ LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 static int on_gp_btn_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
     int btn=binding->param1;
-    if(btn>=GP_BTN_COUNT){
+    if(btn>=CONFIG_HE_GAMEPAD_HID_NUM_BUTTONS){
         LOG_ERR("Invalid button %d", btn);
         return -EINVAL;
     }
@@ -58,7 +58,7 @@ static int on_gp_btn_binding_pressed(struct zmk_behavior_binding *binding,
 static int on_gp_btn_binding_released(struct zmk_behavior_binding *binding,
                                       struct zmk_behavior_binding_event event) {
     int btn=binding->param1;
-    if(btn>=GP_BTN_COUNT){
+    if(btn>=CONFIG_HE_GAMEPAD_HID_NUM_BUTTONS){
         LOG_ERR("Invalid button %d", btn);
         return -EINVAL;
     }
@@ -76,7 +76,7 @@ static const struct behavior_driver_api behavior_key_press_driver_api = {
     .binding_pressed = on_gp_btn_binding_pressed,
     .binding_released = on_gp_btn_binding_released,
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
-    .parameter_metadata = &metadata,
+    // .parameter_metadata = &metadata,
 #endif // IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 };
 

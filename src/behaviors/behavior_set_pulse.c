@@ -109,7 +109,7 @@ static const struct behavior_driver_api behavior_key_press_driver_api = {
     .binding_released = on_set_pulse_binding_released,
     .locality=BEHAVIOR_LOCALITY_EVENT_SOURCE,
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
-    .parameter_metadata = &metadata,
+    // .parameter_metadata = &metadata,
 #endif // IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 };
 

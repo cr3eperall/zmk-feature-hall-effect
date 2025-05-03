@@ -100,7 +100,7 @@ static int zmk_usb_hid_send_report(const uint8_t *report, size_t len) {
         return -ENODEV;
     default:
         k_sem_take(&hid_sem, K_MSEC(30));
-        LOG_HEXDUMP_DBG(report, len, "HID-IO HID report");
+        LOG_HEXDUMP_DBG(report, len, "HE Gamepad HID report");
         int err = hid_int_ep_write(hid_dev, report, len, NULL);
 
         if (err) {

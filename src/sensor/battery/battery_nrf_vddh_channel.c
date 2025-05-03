@@ -70,7 +70,7 @@ struct vddh_data_ch {
 };
 
 struct vddh_config_ch {
-    uint8_t channel_id;
+    // uint8_t channel_id;
     const struct adc_dt_spec channel;
 };
 
@@ -140,7 +140,10 @@ static int vddh_init_ch(const struct device *dev) {
         .channels = BIT(conf->channel.channel_id),
         .buffer = &drv_data->value.adc_raw,
         .buffer_size = sizeof(drv_data->value.adc_raw),
-        .oversampling = 4,
+        .oversampling = 0, // oversampling limited to 0 because of anomaly 212: SAADC: Events are not generated when
+        // switching from scan mode to no-scan mode with burst enabled
+        // https://docs.nordicsemi.com/bundle/errata_nRF52840_Rev2/page/ERR/nRF52840/Rev2/latest/err_840.html
+        // there is a workaround but its propably not worth it
         .calibrate = true,
         .options = NULL,
         .resolution = 12,
