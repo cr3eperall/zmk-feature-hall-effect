@@ -11,6 +11,7 @@
 #include <zephyr/settings/settings.h>
 
 #include "drivers/kscan_forwarder.h"
+#include "drivers/pulse_set_forwarder.h"
 #include "input-event-codes.h"
 #include "adc.h"
 // #include <zephyr/sys/util.h>
@@ -21,7 +22,7 @@
 
 LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
 
-#define DT_DRV_COMPAT he_kscan_he_direct_pulsed
+#define DT_DRV_COMPAT he_kscan_direct_pulsed
 
 static int init_adc(const struct device *dev) {
     const struct kscan_he_config *conf = dev->config;
@@ -331,8 +332,8 @@ static int kscan_he_init(const struct device *dev) {
         float *coeff_f = (float *)&coeff_i;
         data->polyfit[i] = *coeff_f;
     }
-    if(conf->kscan_forwarder){
-        int err = kscan_forwarder_config_pulse_set(conf->kscan_forwarder, kscan_he_pulse_set);
+    if(conf->pulse_set_forwarder){
+        int err = pulse_set_forwarder_config(conf->pulse_set_forwarder, kscan_he_pulse_set, dev);
         if (err) {
             LOG_ERR("Error during forwarder config_pulse_set: %d", err);
             return err;
@@ -500,6 +501,7 @@ static const struct kscan_driver_api kscan_he_api = {
         .group_count = DT_INST_FOREACH_CHILD_SEP(n, CHILD_COUNT, (+)),         \
         .he_groups = kscan_he_group_cfg_##n,                                   \
         .kscan_forwarder = DEVICE_DT_GET_OR_NULL(DT_INST_PHANDLE(n, kscan_forwarder)), \
+        .pulse_set_forwarder = DEVICE_DT_GET_OR_NULL(DT_INST_PHANDLE(n, pulse_set_forwarder)), \
         .calibrate = DT_INST_PROP(n, calibrate),                              \
         .n_coeffs = DT_INST_PROP_LEN(n, polyfit),                  \
         .polyfit_int32 = {DT_INST_FOREACH_PROP_ELEM_SEP(                       \

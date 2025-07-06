@@ -3,7 +3,7 @@ config HE_BEHAVIOR_GAMEPAD_BTN
     default y
     depends on DT_HAS_HE_BEHAVIOR_GAMEPAD_BTN_ENABLED
 
-config HE_BEHAVIOR_SET_PULSE
-    bool "Enable set pulse behavior"
+config HE_BEHAVIOR_PULSE_SET
+    bool "Enable pulse set behavior"
     default y
-    depends on DT_HAS_HE_BEHAVIOR_SET_PULSE_ENABLED
+    depends on DT_HAS_HE_BEHAVIOR_PULSE_SET_ENABLED

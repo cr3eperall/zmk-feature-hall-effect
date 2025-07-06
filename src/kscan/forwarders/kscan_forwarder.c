@@ -4,13 +4,12 @@
 #include <zephyr/device.h>
 
 LOG_MODULE_DECLARE(feature_hall_effect, CONFIG_HE_LOG_LEVEL);
-#define DT_DRV_COMPAT he_kscan_he_direct_pulsed_forwarder
+#define DT_DRV_COMPAT he_kscan_forwarder
 
 struct kscan_forwarder_data {
     const struct device *dev;
     const struct device *kscan_dev;
     kscan_forwarder_callback_t callback;
-    kscan_forwarder_pulse_set_callback_t pulse_set_callback;
 };
 
 // driver init function
@@ -35,17 +34,6 @@ static int forwarder_config(const struct device *dev,
     return 0;
 }
 
-static int forwarder_config_pulse_set(const struct device *dev,
-                                          kscan_forwarder_pulse_set_callback_t callback) {
-    struct kscan_forwarder_data *data = dev->data;
-
-    if (!callback) {
-        return -EINVAL;
-    }
-    data->pulse_set_callback = callback;
-    return 0;
-}
-
 static int forwarder_forward(const struct device *dev, uint32_t row,
                                    uint32_t column, bool pressed) {
     struct kscan_forwarder_data *data = dev->data;
@@ -57,25 +45,10 @@ static int forwarder_forward(const struct device *dev, uint32_t row,
     return 0;
 }
 
-static int forwarder_pulse_set(const struct device *dev, bool pulse_enable) {
-    struct kscan_forwarder_data *data = dev->data;
-
-    if (!data->pulse_set_callback) {
-        return -ENOTSUP;
-    }
-    if(!data->kscan_dev){
-        return -ENODEV;
-    }
-    data->pulse_set_callback(data->kscan_dev, pulse_enable);
-    return 0;
-}
-
 // kscan api struct
 static const struct kscan_forwarder_api forwarder_api = {
     .config = forwarder_config,
     .forward = forwarder_forward,
-    .config_pulse_set= forwarder_config_pulse_set,
-    .pulse_set = forwarder_pulse_set,
 };
 
 #define KSCAN_FORWARDER_INIT(n)                                                \

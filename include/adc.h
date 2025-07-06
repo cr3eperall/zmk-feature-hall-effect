@@ -55,6 +55,7 @@ struct kscan_he_config {
     int16_t group_count;
     const struct kscan_he_group_cfg *he_groups;
     const struct device *kscan_forwarder;
+    const struct device *pulse_set_forwarder;
     bool calibrate;
     int16_t n_coeffs;
     int32_t polyfit_int32[];

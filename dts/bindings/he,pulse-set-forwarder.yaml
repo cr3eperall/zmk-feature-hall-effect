@@ -1,0 +1,6 @@
+# Copyright (c) 2025, cr3eperall
+# SPDX-License-Identifier: MIT
+
+description: Device that allows any device to change the pulse mode of a compatible driver.
+
+compatible: "he,pulse-set-forwarder"

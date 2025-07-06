@@ -12,3 +12,4 @@ zephyr_include_directories(include/he)
 zephyr_include_directories(include/he/hid) # copied and modified from https://github.com/badjeff/zmk-hid-io
 
 zephyr_syscall_header(include/drivers/kscan_forwarder.h)
+zephyr_syscall_header(include/drivers/pulse_set_forwarder.h)

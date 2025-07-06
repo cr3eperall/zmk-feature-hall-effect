@@ -3,4 +3,4 @@
 
 description: Device that allows any device to generate kscan events by forwarding the event to a compatible driver.
 
-compatible: "he,kscan-he-direct-pulsed-forwarder"
+compatible: "he,kscan-forwarder"

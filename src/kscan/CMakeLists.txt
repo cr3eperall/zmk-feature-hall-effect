@@ -1,4 +1,4 @@
 # target_sources_ifdef(CONFIG_ZMK_DRIVER_KSCAN_HE_DIRECT_PULSED app PRIVATE kscan_he_direct_pulsed.c)
 # target_sources_ifdef(CONFIG_ZMK_DRIVER_KSCAN_FORWARDER app PRIVATE kscan_forwarder.c)
-target_sources_ifdef(CONFIG_HE_KSCAN_FORWARDER app PRIVATE kscan_he_direct_pulsed.c)
-target_sources_ifdef(CONFIG_HE_KSCAN_HE_DIRECT_PULSED app PRIVATE kscan_forwarder.c)
+add_subdirectory(forwarders/)
+target_sources_ifdef(CONFIG_HE_KSCAN_DIRECT_PULSED app PRIVATE kscan_direct_pulsed.c)

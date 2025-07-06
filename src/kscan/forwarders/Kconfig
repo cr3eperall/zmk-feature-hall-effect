@@ -1,0 +1,4 @@
+config HE_KSCAN_FORWARDER
+    bool "Enable HE KSCAN forwarder"
+    default y
+    depends on DT_HAS_HE_KSCAN_FORWARDER_ENABLED

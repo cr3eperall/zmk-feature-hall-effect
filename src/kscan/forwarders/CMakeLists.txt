@@ -1,0 +1,2 @@
+target_sources_ifdef(CONFIG_HE_KSCAN_DIRECT_PULSED app PRIVATE kscan_forwarder.c)
+target_sources_ifdef(CONFIG_HE_KSCAN_DIRECT_PULSED app PRIVATE pulse_set_forwarder.c)

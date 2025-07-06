@@ -1,5 +1,6 @@
 # ZMK Hall Effect feature module
 This module is a collection of drivers, behaviors and input-processors to support Hall-effect switches and features commonly found on HE keyboards
+
 # Features
 - **Adjustable actuation**
 - **Rapid Trigger**
@@ -7,9 +8,10 @@ This module is a collection of drivers, behaviors and input-processors to suppor
 - **Dynamic keystroke**
 - **Mouse input**
 - **Gamepad input**
+
 ## Drivers
-  - `he,kscan-he-direct-pulsed`: Each HE sensor is wired directly to an adc channel, supports the use of an enable pin to power the sensor only when it needs to be read. <br/>
-    Generates input events with type `INPUT_EV_HE` but can also generate kscan events with `he,kscan-he-direct-pulsed-forwarder`(this allows the input processors to use the normal keymap)
+  - `he,kscan-direct-pulsed`: Each HE sensor is wired directly to an adc channel, supports the use of an enable pin to power the sensor only when it needs to be read. <br/>
+    Generates input events with type `INPUT_EV_HE` but can also generate kscan events with `he,kscan-forwarder`(this allows the input processors to use the normal keymap)
 > This was designed to work with my custom HE keyboard, if you need another driver(e.g. using analog multiplexers), you can open an issue (note that i have no way to test other drivers at the moment)
 
   - `zmk,battery-nrf-vddh-channel`: Has the same functionality as `zmk,battery-nrf-vddh` but you can select which adc channel gets used
@@ -19,6 +21,7 @@ This module is a collection of drivers, behaviors and input-processors to suppor
 > This also happens with `zmk,battery-nrf-vddh`
 
 ## Input Processors
+
 #### These are the analog equivalent of behaviors
 
 - `he,raw-signal-processor`: Apply a SOS filter to the input signal, this is used to reduce the noise of the sensor
@@ -31,12 +34,12 @@ This module is a collection of drivers, behaviors and input-processors to suppor
 - `he,input-processor-gamepad-forwarder`: Send a joystick or analog trigger event proportional to the switch height, emulating a gamepad
 - `he,input-processor-mouse-forwarder`: Send X,Y, vertical or horizontal wheel event proportional to the switch height
 
-
 ## Behaviors
 - `he,behavior-gamepad-btn`: Send a gamepad button event
-- `he,behavior-set-pulse`: Set the pulse mode of `he,kscan-he-direct-pulsed` (turn off the enable pin after the read is done / keep the enable pin always on)
+- `he,behavior-pulse-set`: Set the pulse mode of `he,kscan-direct-pulsed` (turn off the enable pin after the read is done / keep the enable pin always on)
 
 ## Other
 - `he,input-listener`: Same as `zmk,input-listener` but it executes the input-processors of the parent before going to the ones in the layers and stops when receiving any `ZMK_INPUT_PROC_STOP`
 - `he,input-split`: Same as `zmk,input-split` but doesn't send the input when it receives a `ZMK_INPUT_PROC_STOP` (only for the peripheral side)
-- `he,kscan-he-direct-pulsed-forwarder`: Allows for external control of `he,kscan-he-direct-pulsed`(generate kscan event outside of the driver and control how the driver works)
+- `he,kscan-forwarder`: Allows for external control of `he,kscan-direct-pulsed`(generate kscan events outside of the driver)
+- `he,pulse-set-forwarder`: Allows for external control of `he,kscan-direct-pulsed`(control how the `kscan-direct-pulsed driver` works)

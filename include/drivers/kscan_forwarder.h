@@ -18,23 +18,16 @@ extern "C" {
 typedef void (*kscan_forwarder_callback_t)(const struct device *dev, uint32_t row,
     uint32_t column,
     bool pressed);
-typedef void (*kscan_forwarder_pulse_set_callback_t)(const struct device *dev, bool pulse_enable);
-
 
 typedef int (*kscan_forwarder_config_t)(const struct device *dev,
     kscan_forwarder_callback_t callback, const struct device *kscan_dev);
-typedef int (*kscan_forwarder_config_pulse_set_t)(const struct device *dev,
-    kscan_forwarder_pulse_set_callback_t callback);
 typedef int (*kscan_forwarder_forward_t)(const struct device *dev, uint32_t row,
-                               uint32_t column, bool pressed);
-typedef int (*kscan_forwarder_pulse_set_t)(const struct device *dev, bool pulse_enable);    
+                               uint32_t column, bool pressed); 
 
 
 __subsystem struct kscan_forwarder_api {
     kscan_forwarder_config_t config;
-    kscan_forwarder_config_pulse_set_t config_pulse_set;
     kscan_forwarder_forward_t forward;
-    kscan_forwarder_pulse_set_t pulse_set;
 };
 /**
  * @endcond
@@ -64,29 +57,6 @@ static inline int z_impl_kscan_forwarder_config(const struct device *dev,
 }
 
 /**
- * @brief Gives the pulse_set callback to the kscan forwarder device.
- * @param dev Pointer to the device structure for the driver instance.
- * @param callback to call when forwarding a pulse_set.
- *
- * @retval 0 If successful.
- * @retval Negative errno code if failure.
- */
-__syscall int kscan_forwarder_config_pulse_set(const struct device *dev,
-    kscan_forwarder_pulse_set_callback_t callback);
-
-static inline int z_impl_kscan_forwarder_config_pulse_set(const struct device *dev,
-    kscan_forwarder_pulse_set_callback_t callback) {
-    const struct kscan_forwarder_api *api =
-        (const struct kscan_forwarder_api *)dev->api;
-
-    if (api->config_pulse_set == NULL ) {
-        return -ENOTSUP;
-    }
-
-    return api->config_pulse_set(dev, callback);
-}
-
-/**
  * @brief Forward a key event to the kscan device using the callback function.
  * @param dev Pointer to the device structure for the driver instance.
  *
@@ -106,25 +76,6 @@ static inline int z_impl_kscan_forwarder_forward(const struct device *dev,
     }
 
     return api->forward(dev, row, col, pressed);
-}
-
-/**
- * @brief Forward a key event to the kscan device using the callback function.
- * @param dev Pointer to the device structure for the driver instance.
- *
- * @retval 0 If successful.
- * @retval Negative errno code if failure.
- */
-__syscall int kscan_forwarder_pulse_set(const struct device *dev, bool pulse_enable);
-
-static inline int z_impl_kscan_forwarder_pulse_set(const struct device *dev, bool pulse_enable) {
-    const struct kscan_forwarder_api *api = (const struct kscan_forwarder_api *)dev->api;
-
-    if (api->pulse_set == NULL) {
-        return -ENOTSUP;
-    }
-
-    return api->pulse_set(dev, pulse_enable);
 }
 
 #ifdef __cplusplus

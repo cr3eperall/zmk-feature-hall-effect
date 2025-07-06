@@ -3,7 +3,7 @@
 
 description: Hall effect kscan controller that produces INPUT_HE_RC analog inputs in micrometers of height
 
-compatible: "he,kscan-he-direct-pulsed"
+compatible: "he,kscan-direct-pulsed"
 
 include: kscan.yaml
 
@@ -29,6 +29,9 @@ properties:
     default: 1
   kscan-forwarder:
     description: kscan-forwarder to pass the kscan callback to
+    type: phandle
+  pulse-set-forwarder:
+    description: pulse-set-forwarder to pass the pulse set callback to
     type: phandle
   calibrate:
     description: Print the raw values to serial and don't send them to the input listener

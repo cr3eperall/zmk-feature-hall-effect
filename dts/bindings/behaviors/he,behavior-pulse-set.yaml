@@ -3,7 +3,7 @@
 
 description: Set the pulse mode of kscan-he-direct-pulsed
 
-compatible: "he,behavior-set-pulse"
+compatible: "he,behavior-pulse-set"
 
 include: one_param.yaml
 
@@ -11,7 +11,7 @@ include: one_param.yaml
 # param1==1: enable pulse mode
 # param1==2: toggle pulse mode
 properties:
-  kscan-forwarder:
-    description: The kscan forwarder to use for this behavior
+  pulse-set-forwarder:
+    description: The pulse set forwarder to use for this behavior
     type: phandle
     required: true

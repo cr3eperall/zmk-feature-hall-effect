@@ -5,7 +5,7 @@
  */
 / {
     /omit-if-no-ref/ kscan_forwarder: kscan-forwarder {
-        compatible = "he,kscan-he-direct-pulsed-forwarder";
+        compatible = "he,kscan-forwarder";
     };
 };
 

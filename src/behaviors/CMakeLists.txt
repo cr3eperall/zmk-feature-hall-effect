@@ -1,2 +1,2 @@
 target_sources_ifdef(CONFIG_HE_BEHAVIOR_GAMEPAD_BTN app PRIVATE behavior_gamepad_btn.c)
-target_sources_ifdef(CONFIG_HE_BEHAVIOR_SET_PULSE app PRIVATE behavior_set_pulse.c)
+target_sources_ifdef(CONFIG_HE_BEHAVIOR_PULSE_SET app PRIVATE behavior_pulse_set.c)
