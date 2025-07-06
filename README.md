@@ -16,9 +16,9 @@ This module is a collection of drivers, behaviors and input-processors to suppor
 
   - `zmk,battery-nrf-vddh-channel`: Has the same functionality as `zmk,battery-nrf-vddh` but you can select which adc channel gets used
 > [!NOTE]
-> Currently if you enable both drivers using non-overlapping channels (which is necessary to enable both), everything stops working.
-> So this driver is pretty much useless for now.
-> This also happens with `zmk,battery-nrf-vddh`
+> There is a problem with many nrf52840 chips where if you switch between single channel and multi-channel mode, the adc subsystem stops working, this is caused by [anomaly 212](https://docs.nordicsemi.com/bundle/errata_nRF52840_Rev2/page/ERR/nRF52840/Rev2/latest/err_840.html) on chips with build codes CKAA-Dx0 or QIAA-Dx0.
+> 
+> Currently if you have an affected chip and enable both drivers using non-overlapping channels (which is necessary to enable both), everything stops working.
 
 ## Input Processors
 
