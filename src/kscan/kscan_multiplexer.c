@@ -440,8 +440,8 @@ static const struct kscan_driver_api kscan_he_api = {
         BUILD_ASSERT(DT_PROP(node_id, address_range_max) >=                             \
                      DT_PROP(node_id, address_range_min),                      \
                  "address_range_max must be >= address_range_min");            \
-    BUILD_ASSERT(DT_PROP(node_id, address_range_min)>0, "address_range_min must be > 0"); \
-    BUILD_ASSERT(DT_PROP(node_id, address_range_max) <= KSCAN_ADC_MAX_CHANNELS, "address_range_max must be <= KSCAN_ADC_MAX_CHANNELS"); \
+    BUILD_ASSERT(DT_PROP(node_id, address_range_min)>=0, "address_range_min must be >= 0"); \
+    BUILD_ASSERT(DT_PROP(node_id, address_range_max) < (1 << DT_INST_PROP_LEN(inst_id, address_gpios)), "address_range_max must be < 2^count(address_gpios)"); \
     static struct kscan_he_mux_key_cfg keys_##inst_id##_##node_id[] = {            \
         DT_FOREACH_CHILD_SEP_VARGS(node_id, KSCAN_KEY_INIT, (, ))}; 
 
