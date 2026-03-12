@@ -10,9 +10,9 @@ This module is a collection of drivers, behaviors and input-processors to suppor
 - **Gamepad input**
 
 ## Drivers
+> This was designed to work with my custom HE keyboard, if you need another driver, you can open an issue (note that i have no way to test other drivers at the moment)
   - `he,kscan-direct-pulsed`: Each HE sensor is wired directly to an adc channel, supports the use of an enable pin to power the sensor only when it needs to be read. <br/>
     Generates input events with type `INPUT_EV_HE`. To generate kscan events, use the "&he_pass" or a `he,input-processor-adjustable-actuation` behavior in the he keymap or in the input listener
-> This was designed to work with my custom HE keyboard, if you need another driver(e.g. using analog multiplexers), you can open an issue (note that i have no way to test other drivers at the moment)
 
   - `he,kscan-multiplexer`: Each HE sensor is wired to an input of an analog multiplexer, the multiplexer is then wired to an adc channel and some select pins, the select signals of multiple multiplexers can be wired together with the output analog signal going to different adc channels to allow parallel sampling for the same address. <br/>
     Generates input events with type `INPUT_EV_HE`. To generate kscan events, use the "&he_pass" or a `he,input-processor-adjustable-actuation` behavior in the he keymap or in the input listener
