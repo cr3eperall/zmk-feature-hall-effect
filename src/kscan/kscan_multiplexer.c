@@ -192,7 +192,7 @@ static int kscan_he_read(const struct device *dev) {
     // k_msleep(3000);
     // LOG_INF("pin high");
     bool pressed = false;
-    for (int i = data->global_min_address; i<data->global_max_address; i++) {
+    for (int i = data->global_min_address; i<=data->global_max_address; i++) {
 
         int err = set_address(dev, i);
         if (err) {
