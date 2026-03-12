@@ -288,7 +288,7 @@ static void kscan_adc_calibrate_work_handler(struct k_work *work) {
     for(int i = 0; i < conf->group_count; i++){
         data->adc_groups[i].as.calibrate = true;
     }
-    k_work_reschedule(&data->adc_read_work, K_TIMEOUT_ABS_MS(CONFIG_HE_ADC_CALIBRATION_DELAY));
+    k_work_reschedule(&data->adc_read_work, K_MSEC(CONFIG_HE_ADC_CALIBRATION_DELAY));
 }
 
 static void kscan_he_pulse_set(const struct device *dev, bool pulse_enable){

@@ -245,7 +245,7 @@ static void kscan_adc_calibrate_work_handler(struct k_work *work) {
 
     const struct kscan_he_mux_config *conf = dev->config;
     data->as.calibrate = true;
-    k_work_reschedule(&data->adc_read_work, K_TIMEOUT_ABS_MS(CONFIG_HE_ADC_CALIBRATION_DELAY));
+    k_work_reschedule(&data->adc_read_work, K_MSEC(CONFIG_HE_ADC_CALIBRATION_DELAY));
 }
 
 // driver init function
